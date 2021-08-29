@@ -97,7 +97,7 @@ namespace PCToolkit.Rendering
             }
 
             var distance = CalculateDistance(targetRenderer);
-            Vector3 targetPos = targetRenderer.center;
+            Vector3 targetPos = targetRenderer.bounds.center;
 
             for (int i = 0; i < cameras.Count; i++)
             {
@@ -148,7 +148,7 @@ namespace PCToolkit.Rendering
             }
 
             var mvis = new MultiViewImageSet();
-            mvis.volume = targetRenderer.size;
+            mvis.bounds = targetRenderer.bounds;
             mvis.imageSets = imageSets.ToArray();
             return mvis;
         }

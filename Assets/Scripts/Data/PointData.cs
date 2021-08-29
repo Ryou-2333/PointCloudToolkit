@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace PCToolkit.Data
 {
-    [Serializable]
     public struct ComputeBufferData
     {
         public Vector3 raw;
@@ -23,7 +22,6 @@ namespace PCToolkit.Data
         }
     }
 
-    [Serializable]
     public struct PCTColor
     {
         public float r;
@@ -74,7 +72,6 @@ namespace PCToolkit.Data
         public static PCTColor black {get { return new PCTColor(0, 0, 0); } }
     }
 
-    [Serializable]
     public class Point
     {
         public Vector3 position;

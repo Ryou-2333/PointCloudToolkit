@@ -7,23 +7,23 @@ namespace PCToolkit.Sampling
     public class ParameterSampler
     {
         private HaltonMask mask;
-        private ImageSet imageSet;
+        private MultiViewImageSet imageSets;
 
-        public ParameterSampler(ImageSet imageSet, Vector3 volume, int camCount)
+        public ParameterSampler(MultiViewImageSet imageSets)
         {
-            this.imageSet = imageSet;
-            mask = new HaltonMask(volume, camCount, imageSet.size.x, imageSet.size.y);
+            this.imageSets = imageSets;
+            mask = new HaltonMask(imageSets.bounds.size, imageSets.imageSets.Length, imageSets.size.x, imageSets.size.y, 100f);
         }
 
-        public static Color BilinearSample(Texture2D sampler, Vector2 pos)
-        {
-            var uv = pos / new Vector2(sampler.width, sampler.height);
-            return sampler.GetPixelBilinear(uv.x, uv.y);
-        }
+        //public static Color BilinearSample(Texture2D sampler, Vector2 pos)
+        //{
+        //    var uv = pos / new Vector2(sampler.width, sampler.height);
+        //    return sampler.GetPixelBilinear(uv.x, uv.y);
+        //}
 
-        public static Color PointSample(Texture2D sampler, Vector2 pos)
+        public static Color PointSample(Texture2D sampler, Vector2Int pos)
         {
-            return sampler.GetPixel(Mathf.RoundToInt(pos.x), Mathf.RoundToInt(pos.y));
+            return sampler.GetPixel(pos.x, pos.y);
         }
 
         const float factor1 = 128f;
@@ -39,30 +39,39 @@ namespace PCToolkit.Sampling
         public PointCloudData SamplePoints()
         {
             var points = new List<Point>();
-            foreach (var sp in mask.samplePoints)
+            foreach (var imageSet in imageSets.imageSets)
             {
-                var encodedDepth = PointSample(imageSet.depth, sp);
-                if (encodedDepth == Color.clear)
+                foreach (var sp in mask.samplePoints)
                 {
-                    //empty pixel
-                    continue;
-                }
+                    var encodedDepth = PointSample(imageSet.depth, sp);
+                    if (encodedDepth == Color.clear)
+                    {
+                        //empty pixel
+                        continue;
+                    }
 
-                var depth = DecodeDepth(encodedDepth);
-                var clipPos = new Vector4(sp.x / imageSet.size.x * 2f - 1f, sp.y / imageSet.size.y * 2f - 1f, depth);
-                var worldPos = imageSet.imageToWorld.MultiplyPoint(clipPos);
-                var p = new Point(worldPos);
-                var param = BilinearSample(imageSet.parameters, sp);
-                p.roughness = param.r;
-                p.metallic = param.g;
-                var albedo = BilinearSample(imageSet.albedo, sp);
-                p.albedo = new PCTColor(albedo);
-                var normalColor = BilinearSample(imageSet.normal, sp);
-                var normal = new Vector3(normalColor.r, normalColor.g, normalColor.b);
-                normal = normal * 2 - Vector3.one;
-                var height = Vector3.Dot(normal, Vector3.up);
-                p.height = height;
-                points.Add(p);
+                    var depth = DecodeDepth(encodedDepth);
+                    var clipPos = new Vector4(sp.x / imageSet.size.x * 2f - 1f, sp.y / imageSet.size.y * 2f - 1f, depth);
+                    var worldPos = imageSet.imageToWorld.MultiplyPoint(clipPos);
+                    if (!imageSets.bounds.Contains(worldPos))
+                    {
+                        //out of bounds.
+                        continue;
+                    }
+
+                    var p = new Point(worldPos);
+                    var param = PointSample(imageSet.parameters, sp);
+                    p.roughness = param.r;
+                    p.metallic = param.g;
+                    var albedo = PointSample(imageSet.albedo, sp);
+                    p.albedo = new PCTColor(albedo);
+                    var normalColor = PointSample(imageSet.normal, sp);
+                    var normal = new Vector3(normalColor.r, normalColor.g, normalColor.b);
+                    normal = normal * 2 - Vector3.one;
+                    var height = Vector3.Dot(normal, Vector3.up);
+                    p.height = height;
+                    points.Add(p);
+                }
             }
 
             PointCloudData data = new PointCloudData();

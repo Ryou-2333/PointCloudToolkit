@@ -42,25 +42,18 @@ namespace PCToolkit.Rendering
                 }
             }
         }
-        public Vector3 size
+        public Bounds bounds
         {
             get
             {
-                return mesh.bounds.size;
+                return mesh.bounds;
             }
         }
         public float maxBound
         {
             get
             {
-                return Mathf.Max(size.x, Mathf.Max(size.y, size.z));
-            }
-        }
-        public Vector3 center
-        {
-            get
-            {
-                return transform.position + Vector3.up * size.y / 2f;
+                return Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
             }
         }
     }

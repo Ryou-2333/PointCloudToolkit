@@ -72,7 +72,6 @@ Varyings Vertex(Attributes input)
     // Color space convertion & applying tint
 #if !UNITY_COLORSPACE_GAMMA
     rawCol = GammaToLinearSpace(rawCol);
-    albedo = GammaToLinearSpace(albedo);
 #endif
     // Set vertex output.
     Varyings o;

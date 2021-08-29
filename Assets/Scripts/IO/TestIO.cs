@@ -15,12 +15,12 @@ namespace PCToolkit.IO
         public void GeneratePointCloud()
         {
             mvc.SpawnCameras(target);
-            var mvis = mvc.CaptureModes(target, 1);
-            var sampler = new ParameterSampler(mvis.imageSets[0], mvis.volume, 1);
+            var mvis = mvc.CaptureModes(target);
+            var sampler = new ParameterSampler(mvis);
             var pointCloud = sampler.SamplePoints();
             var pcRender = new PointCloudRenderData();
             pcRender.pointCloudBuffer = pointCloud.pointCloudBuffer;
-            AssetDatabase.CreateAsset(pcRender, string.Format("Assets/PointClouds/{0}_render.asset", target.name));
+            AssetDatabase.CreateAsset(pcRender, string.Format("Assets/Datasets/PointClouds/{0}_render.asset", target.name));
         }
 
         public void GenerateImages()

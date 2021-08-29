@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace PCToolkit.Data
 {
-    [Serializable]
     public class CaptureData
     {
         public int camIndex;

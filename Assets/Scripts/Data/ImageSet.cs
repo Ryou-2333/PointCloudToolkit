@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace PCToolkit.Data
 {
-    [Serializable]
     public class ImageSet
     {
         public Texture2D depth;
@@ -21,10 +20,9 @@ namespace PCToolkit.Data
         }
     }
 
-    [Serializable]
     public class MultiViewImageSet
     {
-        public Vector3 volume;
+        public Bounds bounds;
         public ImageSet[] imageSets;
         public Vector2 size
         {

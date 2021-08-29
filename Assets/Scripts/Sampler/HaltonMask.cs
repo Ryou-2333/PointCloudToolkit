@@ -4,19 +4,16 @@ using UnityEngine;
 
 namespace PCToolkit.Sampling
 {
-    [Serializable]
     public class HaltonMask
     {
-        public List<Vector2> samplePoints { get; private set; }
+        public List<Vector2Int> samplePoints { get; private set; }
         private Vector2 rect;
-        private float density;
-        private int cameraCount;
         private const float pointsUnit = 3000000f;
         private int perCamCount;
 
         private void GenerateSequence()
         {
-            samplePoints = new List<Vector2>();
+            samplePoints = new List<Vector2Int>();
             var haltonCount = perCamCount;
             var size = rect.x;
             if (rect.x != rect.y)
@@ -32,15 +29,14 @@ namespace PCToolkit.Sampling
                 var pointf = haltonSeq.m_CurrentPos * size;
                 if (pointf.x < rect.x && pointf.y < rect.y)
                 {
-                    samplePoints.Add(pointf);
+                    samplePoints.Add(new Vector2Int(Mathf.RoundToInt(pointf.x), Mathf.RoundToInt(pointf.y)));
                 }
             }
         }
 
-        public HaltonMask(Vector3 volume, int cameraCount = 64, float width = 1024f, float height = 1024f, float density = 5f)
+        public HaltonMask(Vector3 volume, int cameraCount = 64, float width = 1024f, float height = 1024f, float density = 20f)
         {
             rect = new Vector2(width, height);
-            this.density = density;
             var sumCount = volume.x * volume.y * volume.z * pointsUnit * density;
             perCamCount = (int)(sumCount / cameraCount);
             GenerateSequence();
