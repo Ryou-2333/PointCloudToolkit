@@ -9,17 +9,15 @@ namespace PCToolkit.Rendering
 {
     public class MultiViewCamera : MonoBehaviour
     {
-        public CaptureCamera cameraPrefab;
-        public int[] perLaryerCameras;
+        [SerializeField] MVCParams parameters;
         public List<Vector3> cameraOffsets = new List<Vector3>();
         public List<CaptureCamera> cameras = new List<CaptureCamera>();
-        public float dixtFactor = 1.5f;
         [SerializeField] Volume globalVolume;
 
         public void CalculateCameraPositions()
         {
             cameraOffsets.Clear();
-            int layerCounts = perLaryerCameras.Length;
+            int layerCounts = parameters.perLaryerCameras.Length;
 
             for (int i = 0; i < layerCounts; i++)
             {
@@ -41,26 +39,26 @@ namespace PCToolkit.Rendering
                     curBack = Vector3.Slerp(Vector3.back, Vector3.down, t);
                     curLeft = Vector3.Slerp(Vector3.left, Vector3.down, t);
                 }
-                for (int j = 0; j < perLaryerCameras[i]; j++)
+                for (int j = 0; j < parameters.perLaryerCameras[i]; j++)
                 {
-                    if (j < perLaryerCameras[i] / 4)
+                    if (j < parameters.perLaryerCameras[i] / 4)
                     {
-                        float t = 1f / (perLaryerCameras[i] / 4f) * j;
+                        float t = 1f / (parameters.perLaryerCameras[i] / 4f) * j;
                         cameraOffsets.Add(Vector3.Slerp(curFront, curRight, t));
                     }
-                    else if (j < perLaryerCameras[i] / 2)
+                    else if (j < parameters.perLaryerCameras[i] / 2)
                     {
-                        float t = 1f / (perLaryerCameras[i] / 4f) * (j - perLaryerCameras[i] / 4);
+                        float t = 1f / (parameters.perLaryerCameras[i] / 4f) * (j - parameters.perLaryerCameras[i] / 4);
                         cameraOffsets.Add(Vector3.Slerp(curRight, curBack, t));
                     }
-                    else if (j < perLaryerCameras[i] / 4 * 3)
+                    else if (j < parameters.perLaryerCameras[i] / 4 * 3)
                     {
-                        float t = 1f / (perLaryerCameras[i] / 4f) * (j - perLaryerCameras[i] / 2);
+                        float t = 1f / (parameters.perLaryerCameras[i] / 4f) * (j - parameters.perLaryerCameras[i] / 2);
                         cameraOffsets.Add(Vector3.Slerp(curBack, curLeft, t));
                     }
                     else
                     {
-                        float t = 1f / (perLaryerCameras[i] / 4f) * (j - perLaryerCameras[i] / 4 * 3);
+                        float t = 1f / (parameters.perLaryerCameras[i] / 4f) * (j - parameters.perLaryerCameras[i] / 4 * 3);
                         cameraOffsets.Add(Vector3.Slerp(curLeft, curFront, t));
                     }
                 }
@@ -70,7 +68,7 @@ namespace PCToolkit.Rendering
         private float CalculateDistance(TargetRenderer targetRenderer)
         {
 
-            return targetRenderer.maxBound * dixtFactor;
+            return targetRenderer.maxBound * parameters.distFactor;
         }
 
         public void SpawnCameras(TargetRenderer targetRenderer)
@@ -108,7 +106,7 @@ namespace PCToolkit.Rendering
                     //under ground camera is not realistic.
                     continue;
                 }
-                var cam = Instantiate(cameraPrefab);
+                var cam = Instantiate(parameters.cameraPrefab);
                 cam.transform.position = pos;
                 cam.transform.LookAt(targetPos);
                 cam.sampleCount = sampleCount;

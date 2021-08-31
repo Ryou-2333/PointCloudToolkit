@@ -12,7 +12,7 @@ namespace PCToolkit.Sampling
         public PointCloudSampler(MultiViewImageSet imageSets)
         {
             this.imageSets = imageSets;
-            mask = new HaltonMask(imageSets.bounds.size, imageSets.imageSets.Length, imageSets.size.x, imageSets.size.y, 100f);
+            mask = new HaltonMask(imageSets.bounds.size, imageSets.imageSets.Length, imageSets.rect.x, imageSets.rect.y, 100f);
         }
 
         public static Color PointSample(Texture2D sampler, Vector2Int pos)
@@ -47,7 +47,7 @@ namespace PCToolkit.Sampling
                     }
 
                     var depth = DecodeDepth(encodedDepth);
-                    var imgPos = new Vector3(sp.x / imageSets[i].size.x * 2f - 1f, sp.y / imageSets[i].size.y * 2f - 1f, depth);
+                    var imgPos = new Vector3(sp.x / imageSets[i].rect.x * 2f - 1f, sp.y / imageSets[i].rect.y * 2f - 1f, depth);
                     var worldPos = imageSets[i].imageToWorld.MultiplyPoint(imgPos);
                     if (!imageSets.bounds.Contains(worldPos))
                     {
@@ -82,8 +82,8 @@ namespace PCToolkit.Sampling
                     if (!visMasks[curIndex][i])
                     {
                         var imgPos = imageSets[i].worldToImage.MultiplyPoint(p.position);
-                        var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[i].size.x),
-                            Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[i].size.y));
+                        var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[i].rect.x),
+                            Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[i].rect.y));
                         var curDepth = DecodeDepth(PointSample(imageSets[i].depth, sp));
                         // Visibility check
                         if (Mathf.Abs(curDepth - imgPos.z) <= 0.001f)
@@ -105,8 +105,8 @@ namespace PCToolkit.Sampling
                     if (visMasks[i][j])
                     {
                         var imgPos = imageSets[j].worldToImage.MultiplyPoint(points[i].position);
-                        var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[j].size.x),
-                            Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[j].size.y));
+                        var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[j].rect.x),
+                            Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[j].rect.y));
                         var rawColor = PointSample(imageSets[i].shaded, sp);
                         colorValues += weight * new Vector3(rawColor.r, rawColor.g, rawColor.b);
                     }

@@ -12,17 +12,18 @@ namespace PCToolkit.Data
         public Texture2D shaded;
         public Matrix4x4 imageToWorld;
         public Matrix4x4 worldToImage;
-        public Vector2 size
+        public Vector2Int rect
         { 
             get 
             { 
-                return new Vector2(albedo.width, albedo.height); 
+                return new Vector2Int(albedo.width, albedo.height); 
             } 
         }
     }
 
     public class MultiViewImageSet
     {
+        public string fileName;
         public Bounds bounds;
         public ImageSet[] imageSets;
         public int length { get { return imageSets.Length; } }
@@ -39,11 +40,11 @@ namespace PCToolkit.Data
                 throw new Exception("MultiViewImageSet out of index.");
             }
         }
-        public Vector2 size
+        public Vector2Int rect
         {
             get
             {
-                return imageSets[0].size;
+                return imageSets[0].rect;
             }
         }
     }

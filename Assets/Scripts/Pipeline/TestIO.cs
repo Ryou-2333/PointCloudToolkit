@@ -6,7 +6,7 @@ using PCToolkit.Rendering;
 using PCToolkit.Sampling;
 using PCToolkit.Data;
 
-namespace PCToolkit.IO
+namespace PCToolkit.Pipeline
 {
     public class TestIO : MonoBehaviour
     {

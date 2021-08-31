@@ -2,7 +2,7 @@
 
 namespace PCToolkit.Data
 {
-    [CreateAssetMenu(fileName = "PointCloudRenderData", menuName = "PointCloud/PointCloudRenderData", order = 2)]
+    [CreateAssetMenu(fileName = "PointCloudRenderData", menuName = "PCTK/PointCloudRenderData", order = 2)]
     [PreferBinarySerialization]
     public class PointCloudRenderData : ScriptableObject
     {
