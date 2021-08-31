@@ -8,6 +8,7 @@ namespace PCToolkit.Rendering
     {
         private static int camCounter;
         private int index;
+        public int sampleCount = 1;
         [SerializeField] RenderTexture colorRT;
         [SerializeField] RenderTexture depthRT;
         private CaptureCamera()
@@ -52,11 +53,23 @@ namespace PCToolkit.Rendering
             gameObject.SetActive(true);
             var targetTexture = cam.targetTexture;
             RenderTexture.active = targetTexture;
-            cam.Render();
+            if (sampleCount > 1)
+            {
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    cam.Render();
+                }
+            }
+            else
+            {
+                cam.Render();
+            }
+
             data.texture.ReadPixels(new Rect(0, 0, targetTexture.width, targetTexture.height), 0, 0);
             data.texture.Apply();
             RenderTexture.active = null;
-            data.imageToWorld = (cam.projectionMatrix * cam.worldToCameraMatrix).inverse;
+            data.worldToImage = cam.projectionMatrix * cam.worldToCameraMatrix;
+            data.imageToWorld = data.worldToImage.inverse;
             data.camIndex = index;
             gameObject.SetActive(false);
         }

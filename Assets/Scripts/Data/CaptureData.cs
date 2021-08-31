@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace PCToolkit.Data
@@ -8,5 +7,6 @@ namespace PCToolkit.Data
         public int camIndex;
         public Texture2D texture;
         public Matrix4x4 imageToWorld;
+        public Matrix4x4 worldToImage;
     }
 }

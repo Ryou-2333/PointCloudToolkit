@@ -16,20 +16,36 @@ namespace PCToolkit.Data
         public ComputeBuffer _renderBuffer1;
         public const int elementSize = sizeof(float) * 4;
 
-        public int pointCount { get { return pointCloudBuffer.Length; } }
+        public int pointCount 
+        { 
+            get 
+            {
+                if (pointCloudBuffer != null)
+                    return pointCloudBuffer.Length;
+                else
+                    return 0;
+            } 
+        }
         public ComputeBuffer renderBuffer0
         {
             get
             {
+                if (pointCount <= 0)
+                {
+                    return null;
+                }
+
                 if (_posrcBuffer == null)
                 {
                     Initialize();
                 }
+
                 if (_renderBuffer0 == null)
                 {
                     _renderBuffer0 = new ComputeBuffer(pointCount, elementSize);
                     _renderBuffer0.SetData(_posrcBuffer);
                 }
+
                 return _renderBuffer0;
             }
         }
