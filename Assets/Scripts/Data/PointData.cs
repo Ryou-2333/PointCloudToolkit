@@ -17,8 +17,22 @@ namespace PCToolkit.Data
 
         public ComputeBufferData(float x, float y, float z, uint packed)
         {
-            this.raw = new Vector3(x, y, z);
+            raw = new Vector3(x, y, z);
             this.packed = packed;
+        }
+    }
+
+    public struct ComputeBufferDataPacked
+    {
+        public Vector2 raw;
+        public uint packed0;
+        public uint packed1;
+
+        public ComputeBufferDataPacked(float x, float y, uint packed0, uint packed1)
+        {
+            raw = new Vector2(x, y);
+            this.packed0 = packed0;
+            this.packed1 = packed1;
         }
     }
 
@@ -76,8 +90,8 @@ namespace PCToolkit.Data
     {
         public Vector3 position;
         public PCTColor rawColor;
-        //public Vector3 normal;
-        public float height;
+        public Vector3 normal;
+        public Vector3 detailedNormal;
         public float metallic;
         public float roughness;
         public PCTColor albedo;
@@ -86,20 +100,28 @@ namespace PCToolkit.Data
         {
             position = pos;
             rawColor = PCTColor.black;
-            height = 0;
+            normal = Vector3.forward;
+            detailedNormal = Vector3.forward;
             metallic = 0;
             roughness = 0;
             albedo = PCTColor.black;
         }
 
-        public ComputeBufferData PackToPosRC()
+        public ComputeBufferData PackPosRC()
         {
             return new ComputeBufferData(position, rawColor.packed);
         }
 
-        public ComputeBufferData PackToHMRA()
+        public ComputeBufferDataPacked PackMRDA()
         {
-            return new ComputeBufferData(height, metallic, roughness, albedo.packed);
+            var packed = (detailedNormal + Vector3.one) / 2f;
+            var norColor = new PCTColor(packed.x, packed.y, packed.z);
+            return new ComputeBufferDataPacked(metallic, roughness, norColor.packed, albedo.packed);
+        }
+
+        public ComputeBufferData PackNormal()
+        {
+            return new ComputeBufferData(normal, 0);
         }
     }
 }

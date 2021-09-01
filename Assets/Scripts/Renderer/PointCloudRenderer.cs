@@ -17,10 +17,11 @@ namespace PCToolkit.Rendering
         public enum PointRenderMode
         {
             RawColor = 1,
-            Height = 2,
+            DetailedNormal = 2,
             Metallic = 4,
             Roughness = 8,
             Albedo = 16,
+            Normal = 32,
         }
 
         public PointRenderMode renderMode;
@@ -51,15 +52,15 @@ namespace PCToolkit.Rendering
 
         void OnRenderObject()
         {
-            if (renderData == null || renderData.renderBuffer0 == null || renderData.renderBuffer1 == null) return;
+            if (renderData == null || renderData.renderBuffer0 == null || renderData.renderBuffer1 == null || renderData.renderBuffer2 == null) return;
 
             var camera = Camera.current;
             if ((camera.cullingMask & (1 << gameObject.layer)) == 0) return;
             if (camera.name == "Preview Scene Camera") return;
 
-            // TODO: Do view frustum culling here.
             var renderBuffer0 = renderData.renderBuffer0;
             var renderBuffer1 = renderData.renderBuffer1;
+            var renderBuffer2 = renderData.renderBuffer2;
 
             if (pointSize == 0)
             {
@@ -71,7 +72,8 @@ namespace PCToolkit.Rendering
                 pointMaterial.SetInt("_RenderMod", (int)renderMode);
                 pointMaterial.SetMatrix("_Transform", transform.localToWorldMatrix);
                 pointMaterial.SetBuffer("_PosRCBuffer", renderBuffer0);
-                pointMaterial.SetBuffer("_HMRABuffer", renderBuffer1);
+                pointMaterial.SetBuffer("_MRDABuffer", renderBuffer1);
+                pointMaterial.SetBuffer("_NormalBuffer", renderBuffer2);
 #if UNITY_2019_1_OR_NEWER
                 Graphics.DrawProceduralNow(MeshTopology.Points, renderBuffer0.count, 1);
 #else
@@ -89,7 +91,8 @@ namespace PCToolkit.Rendering
                 diskMaterial.SetPass(0);
                 diskMaterial.SetMatrix("_Transform", transform.localToWorldMatrix);
                 diskMaterial.SetBuffer("_PosRCBuffer", renderBuffer0);
-                diskMaterial.SetBuffer("_HMRABuffer", renderBuffer1);
+                diskMaterial.SetBuffer("_MRDABuffer", renderBuffer1);
+                diskMaterial.SetBuffer("_NormalBuffer", renderBuffer2);
                 diskMaterial.SetFloat("_PointSize", pointSize);
 #if UNITY_2019_1_OR_NEWER
                 Graphics.DrawProceduralNow(MeshTopology.Points, renderBuffer0.count, 1);

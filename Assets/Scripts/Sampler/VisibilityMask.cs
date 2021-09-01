@@ -24,8 +24,10 @@ public class VisibilityMask
                 var sect = bitMaskList[key / bitCount];
                 return Convert.ToBoolean((sect >> (key % bitCount)) & 0x01);
             }
-
-            throw new Exception("VisibilityMask out of index.");
+            else
+            {
+                throw new Exception("VisibilityMask out of index.");
+            }
         }
         set
         {
@@ -50,8 +52,10 @@ public class VisibilityMask
                 }
                 weight = w;
             }
-
-            throw new Exception("VisibilityMask out of index.");
+            else
+            {
+                throw new Exception("VisibilityMask out of index.");
+            }
         }
     }
 

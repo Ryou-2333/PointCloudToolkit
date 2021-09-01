@@ -40,14 +40,8 @@ namespace PCToolkit.Sampling
                 foreach (var sp in mask.samplePoints)
                 {
                     var encodedDepth = PointSample(imageSets[i].depth, sp);
-                    if (encodedDepth == Color.clear)
-                    {
-                        //empty pixel
-                        continue;
-                    }
-
                     var depth = DecodeDepth(encodedDepth);
-                    var imgPos = new Vector3(sp.x / imageSets[i].rect.x * 2f - 1f, sp.y / imageSets[i].rect.y * 2f - 1f, depth);
+                    var imgPos = new Vector3(sp.x / (float)imageSets[i].rect.x * 2f - 1f, sp.y / (float)imageSets[i].rect.y * 2f - 1f, depth);
                     var worldPos = imageSets[i].imageToWorld.MultiplyPoint(imgPos);
                     if (!imageSets.bounds.Contains(worldPos))
                     {
@@ -59,13 +53,15 @@ namespace PCToolkit.Sampling
                     var param = PointSample(imageSets[i].parameters, sp);
                     p.roughness = param.r;
                     p.metallic = param.g;
-                    var albedo = PointSample(imageSets[i].albedo, sp);
-                    p.albedo = new PCTColor(albedo);
                     var normalColor = PointSample(imageSets[i].normal, sp);
                     var normal = new Vector3(normalColor.r, normalColor.g, normalColor.b);
                     normal = normal * 2 - Vector3.one;
-                    var height = Vector3.Dot(normal, Vector3.up);
-                    p.height = height;
+                    p.normal = normal;
+                    var detailColor = PointSample(imageSets[i].detail, sp);
+                    var detailedNormal = new Vector3(detailColor.r, detailColor.g, detailColor.b);
+                    p.detailedNormal = detailedNormal;
+                    var albedo = PointSample(imageSets[i].albedo, sp);
+                    p.albedo = new PCTColor(albedo);
                     var visMask = new VisibilityMask(imageSets.length);
                     visMask[i] = true;
                     points.Add(p);
@@ -73,7 +69,7 @@ namespace PCToolkit.Sampling
                 }
             }
 
-            // Calculate visibilities
+            //// Calculate visibilities
             for (int i = 0; i < imageSets.length; i++)
             {
                 var curIndex = 0;
@@ -95,7 +91,7 @@ namespace PCToolkit.Sampling
                 }
             }
 
-            // Sample raw colors
+            //// Sample raw colors
             for (int i = 0; i < points.Count; i++)
             {
                 var weight = 1f / visMasks[i].weight;

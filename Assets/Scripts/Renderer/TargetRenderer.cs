@@ -9,7 +9,9 @@ namespace PCToolkit.Rendering
         Albedo = 1,
         Parameter = 2,
         Normal = 4,
-        Depth = 8
+        Detail = 8,
+        //Last
+        Depth = 16
     }
     public class TargetRenderer : MonoBehaviour
     {

@@ -6,7 +6,8 @@ float4x4 _Transform;
 int _RenderMod;
 
 StructuredBuffer<float4> _PosRCBuffer;
-StructuredBuffer<float4> _HMRABuffer;
+StructuredBuffer<float4> _MRDABuffer;
+StructuredBuffer<float4> _NormalBuffer;
 
 #define MAX_BRIGHTNESS 16
 
@@ -43,6 +44,11 @@ int4 DecodeRenderModParam(uint data)
     return int4(h, m, r, a);
 }
 
+int DecodeRenderModNormal(uint data)
+{
+    return (data >> 5) & 0x01;
+}
+
 // Vertex input attributes
 struct Attributes
 {
@@ -54,8 +60,10 @@ struct Varyings
 {
     float4 position : SV_POSITION;
     half3 rawColor : COLOR;
-    half3 h_m_r : TEXCOORD0;
+    half2 m_r : TEXCOORD0;
     half3 albedo : TEXCOORD1;
+    float3 normal : TEXCOORD2;
+    half3 detailedNormal : TEXCOORD3;
     UNITY_FOG_COORDS(0)
 };
 
@@ -66,20 +74,26 @@ Varyings Vertex(Attributes input)
     float4 pos_rc = _PosRCBuffer[input.vertexID];
     float4 pos = mul(_Transform, float4(pos_rc.xyz, 1));
     half3 rawCol = DecodeColor(asuint(pos_rc.w));
-    float4 h_m_r_a = _HMRABuffer[input.vertexID];
-    half3 h_m_r = h_m_r_a.xyz;
-    half3 albedo = DecodeColor(asuint(h_m_r_a.w));
+    half4 m_r_d_a = _MRDABuffer[input.vertexID];
+    half2 m_r = m_r_d_a.xy;
+    half3 detailedNormal = DecodeColor(asuint(m_r_d_a.z));
+    half3 albedo = DecodeColor(asuint(m_r_d_a.w));
+    float3 normal = _NormalBuffer[input.vertexID].xyz;
     // Color space convertion & applying tint
 #if !UNITY_COLORSPACE_GAMMA
     rawCol = GammaToLinearSpace(rawCol);
+    albedo = GammaToLinearSpace(albedo);
+    detailedNormal = GammaToLinearSpace(detailedNormal);
+    normal = GammaToLinearSpace(normal);
 #endif
     // Set vertex output.
     Varyings o;
     o.position = UnityObjectToClipPos(pos);
     o.rawColor = rawCol;
-    o.h_m_r = h_m_r;
+    o.m_r = m_r;
     o.albedo = albedo;
-
+    o.normal = normal;
+    o.detailedNormal = detailedNormal;
     UNITY_TRANSFER_FOG(o, o.position);
     return o;
 }
@@ -133,10 +147,12 @@ void Geometry(point Varyings input[1], inout TriangleStream<Varyings> outStream)
 half4 Fragment(Varyings input) : SV_Target
 {
     half3 rc = input.rawColor * DecodeRenderModRaw(asuint(_RenderMod));
-    half3 h_m_r = input.h_m_r * DecodeRenderModParam(asuint(_RenderMod)).xyz;
+    half2 m_r = input.m_r * DecodeRenderModParam(asuint(_RenderMod)).yz;
     half3 albedo = input.albedo * DecodeRenderModParam(asuint(_RenderMod)).w;
+    half3 detailedNormal = input.detailedNormal * DecodeRenderModParam(asuint(_RenderMod)).x;
+    half3 normal = input.normal * DecodeRenderModNormal(asuint(_RenderMod));
     half3 white = half3(1, 1, 1);
-    half3 c = rc + h_m_r.x * white + h_m_r.y * white + h_m_r.z * white + albedo;
+    half3 c = rc + detailedNormal + m_r.x * white + m_r.y * white + albedo;
 
     half4 color = half4(c, 1);
     UNITY_APPLY_FOG(input.fogCoord, color);

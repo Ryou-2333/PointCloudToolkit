@@ -9,6 +9,7 @@ namespace PCToolkit.Data
         public Texture2D albedo;
         public Texture2D parameters;
         public Texture2D normal;
+        public Texture2D detail;
         public Texture2D shaded;
         public Matrix4x4 imageToWorld;
         public Matrix4x4 worldToImage;

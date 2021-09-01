@@ -18,12 +18,12 @@ namespace PCToolkit.Pipeline
 
     public class ImageSetIO : MonoBehaviour
     {
-        [SerializeField] string datasetDir = "Datasets";
-        [SerializeField] string imageSetDir = "ImageSets";
-        [SerializeField] string pointCloudDir;
-        [SerializeField] string mvcFilename = "mvc.config";
+        const string datasetDir = "Datasets";
+        const string imageSetDir = "ImageSets";
+        const string pointCloudDir = "PointClouds";
+        const string mvcFilename = "mvc.config";
 
-        public void SaveImageSet(MultiViewImageSet mvis)
+        public static void SaveImageSet(MultiViewImageSet mvis)
         {
             var dir = string.Format("{0}/{1}/{2}/{3}", Application.dataPath, datasetDir, imageSetDir, mvis.fileName);
             Directory.CreateDirectory(dir);
@@ -75,7 +75,7 @@ namespace PCToolkit.Pipeline
             }
         }
 
-        public MultiViewImageSet LoadImageSet(string dirName)
+        public static MultiViewImageSet LoadImageSet(string dirName)
         {
             var dir = string.Format("{0}/{1}/{2}/{3}", Application.dataPath, datasetDir, imageSetDir, dirName);
             try
@@ -114,6 +114,12 @@ namespace PCToolkit.Pipeline
                     Texture2D norTex = new Texture2D(mvcInfo.rect.x, mvcInfo.rect.y, TextureFormat.RGBAFloat, false, true);
                     norTex.LoadImage(pngBytes);
                     imageSet.normal = norTex;
+                    //normal
+                    filename = string.Format("{0}_{1}.png", i, MeshRenderMode.Detail.ToString());
+                    pngBytes = File.ReadAllBytes(string.Format("{0}/{1}", dir, filename));
+                    Texture2D detailTex = new Texture2D(mvcInfo.rect.x, mvcInfo.rect.y, TextureFormat.RGBAFloat, false, true);
+                    detailTex.LoadImage(pngBytes);
+                    imageSet.detail = detailTex;
                     //shaded
                     filename = string.Format("{0}_{1}.png", i, MeshRenderMode.Shaded.ToString());
                     pngBytes = File.ReadAllBytes(string.Format("{0}/{1}", dir, filename));

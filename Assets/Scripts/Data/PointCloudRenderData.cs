@@ -10,10 +10,13 @@ namespace PCToolkit.Data
         [HideInInspector]
         ComputeBufferData[] _posrcBuffer;
         [HideInInspector]
-        ComputeBufferData[] _hmraBuffer;
+        ComputeBufferDataPacked[] _mrdaBuffer;
+        [HideInInspector]
+        ComputeBufferData[] _normalBuffer;
         [HideInInspector]
         public ComputeBuffer _renderBuffer0;
         public ComputeBuffer _renderBuffer1;
+        public ComputeBuffer _renderBuffer2;
         public const int elementSize = sizeof(float) * 4;
 
         public int pointCount 
@@ -54,16 +57,33 @@ namespace PCToolkit.Data
         {
             get
             {
-                if (_hmraBuffer == null)
+                if (_mrdaBuffer == null)
                 {
                     Initialize();
                 }
                 if (_renderBuffer1 == null)
                 {
                     _renderBuffer1 = new ComputeBuffer(pointCount, elementSize);
-                    _renderBuffer1.SetData(_hmraBuffer);
+                    _renderBuffer1.SetData(_mrdaBuffer);
                 }
                 return _renderBuffer1;
+            }
+        }
+
+        public ComputeBuffer renderBuffer2
+        {
+            get
+            {
+                if (_normalBuffer == null)
+                {
+                    Initialize();
+                }
+                if (_renderBuffer2 == null)
+                {
+                    _renderBuffer2 = new ComputeBuffer(pointCount, elementSize);
+                    _renderBuffer2.SetData(_normalBuffer);
+                }
+                return _renderBuffer2;
             }
         }
 
@@ -80,12 +100,19 @@ namespace PCToolkit.Data
                 _renderBuffer1.Release();
                 _renderBuffer1 = null;
             }
+
+            if (_renderBuffer2 != null)
+            {
+                _renderBuffer2.Release();
+                _renderBuffer2 = null;
+            }
         }
 
         void ClearRenderData()
         {
-            _hmraBuffer = null;
+            _mrdaBuffer = null;
             _posrcBuffer = null;
+            _normalBuffer = null;
         }
 
         public void Refresh()
@@ -107,11 +134,13 @@ namespace PCToolkit.Data
         public void Initialize()
         {
             _posrcBuffer = new ComputeBufferData[pointCount];
-            _hmraBuffer = new ComputeBufferData[pointCount];
+            _mrdaBuffer = new ComputeBufferDataPacked[pointCount];
+            _normalBuffer = new ComputeBufferData[pointCount];
             for (int i = 0; i < pointCount; i++)
             {
-                _posrcBuffer[i] = pointCloudBuffer[i].PackToPosRC();
-                _hmraBuffer[i] = pointCloudBuffer[i].PackToHMRA();
+                _posrcBuffer[i] = pointCloudBuffer[i].PackPosRC();
+                _mrdaBuffer[i] = pointCloudBuffer[i].PackMRDA();
+                _normalBuffer[i] = pointCloudBuffer[i].PackNormal();
             }
         }
     }

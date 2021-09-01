@@ -13,6 +13,7 @@ namespace PCToolkit.Rendering
         public List<Vector3> cameraOffsets = new List<Vector3>();
         public List<CaptureCamera> cameras = new List<CaptureCamera>();
         [SerializeField] Volume globalVolume;
+        public int count { get { return cameras.Count; } }
 
         public void CalculateCameraPositions()
         {
@@ -115,78 +116,100 @@ namespace PCToolkit.Rendering
             }
         }
 
-        private IEnumerator CaptureCameras(TargetRenderer targetRenderer, int count, List<CaptureData> data)
+        public void PrepareCaptureMode(TargetRenderer targetRenderer, int camIdx)
         {
-            var c = count > 0 ? count : cameras.Count;
-            for (int i = 0; i < c; i++)
+            Debug.Log(string.Format("Capturing target: {0}, mode: {1}, camera index: {2}",
+                    targetRenderer.name, targetRenderer.renderMode.ToString(), camIdx));
+            if (targetRenderer.renderMode == MeshRenderMode.Depth)
             {
-                Debug.Log(string.Format("Capturing target: {0}, mode: {1}, camera index: {2}",
-                    targetRenderer.name, targetRenderer.renderMode.ToString(), i));
-                if (targetRenderer.renderMode == MeshRenderMode.Depth)
-                {
-                    data.Add(cameras[i].CaptureDepth());
-                }
-                else
-                {
-                    data.Add(cameras[i].CaptureColor());
-                }
-                yield return null;
+                cameras[camIdx].PreCaptureDepth();
+            }
+            else
+            {
+                cameras[camIdx].PreCaptureColor();
             }
         }
 
-        public IEnumerator CaptureParameters(TargetRenderer targetRenderer, MultiViewImageSet mvis, int count = -1)
+        public CaptureData Capture(int camIdx)
         {
-            Debug.Log("Start capture target: " + targetRenderer.name + ". mode: parameters.");
-            targetRenderer.renderMode = MeshRenderMode.Depth;
-            var depthImgs = new List<CaptureData>();
-            yield return CaptureCameras(targetRenderer, count, depthImgs);
-            targetRenderer.renderMode = MeshRenderMode.Albedo;
-            var albedoImgs = new List<CaptureData>();
-            yield return CaptureCameras(targetRenderer, count, albedoImgs);
-            targetRenderer.renderMode = MeshRenderMode.Parameter;
-            var paramImgs = new List<CaptureData>();
-            yield return CaptureCameras(targetRenderer, count, paramImgs);
-            targetRenderer.renderMode = MeshRenderMode.Normal;
-            var normalImgs = new List<CaptureData>();
-            yield return CaptureCameras(targetRenderer, count, paramImgs);
-            var imageSets = new List<ImageSet>();
-            for (int i = 0; i < albedoImgs.Count; i++)
-            {
-                var set = new ImageSet();
-                set.imageToWorld = depthImgs[i].imageToWorld;
-                set.worldToImage = depthImgs[i].worldToImage;
-                set.depth = depthImgs[i].texture;
-                set.albedo = albedoImgs[i].texture;
-                set.parameters = paramImgs[i].texture;
-                set.normal = normalImgs[i].texture;
-                imageSets.Add(set);
-            }
-
-            mvis.bounds = targetRenderer.bounds;
-            mvis.imageSets = imageSets.ToArray();
-            Debug.Log("End capture target: " + targetRenderer.name + ". mode: parameters.");
+            return cameras[camIdx].Capture();
         }
 
-        public IEnumerator CaptureRaw(TargetRenderer targetRenderer, MultiViewImageSet mvis, int count = -1)
-        {
-            Debug.Log("Start capture target: " + targetRenderer.name + ". mode: raw.");
-            targetRenderer.renderMode = MeshRenderMode.Shaded;
-            var rawImgs = new List<CaptureData>();
-            yield return CaptureCameras(targetRenderer, count, rawImgs);
-            var imageSets = new List<ImageSet>();
-            for (int i = 0; i < rawImgs.Count; i++)
-            {
-                var set = new ImageSet();
-                set.imageToWorld = rawImgs[i].imageToWorld;
-                set.worldToImage = rawImgs[i].worldToImage;
-                set.shaded = rawImgs[i].texture;
-                imageSets.Add(set);
-            }
+        //private List<CaptureData> CaptureCameras(TargetRenderer targetRenderer)
+        //{
+        //    var data = new List<CaptureData>();
+        //    for (int i = 0; i < cameras.Count; i++)
+        //    {
+        //        Debug.Log(string.Format("Capturing target: {0}, mode: {1}, camera index: {2}",
+        //            targetRenderer.name, targetRenderer.renderMode.ToString(), i));
+        //        if (targetRenderer.renderMode == MeshRenderMode.Depth)
+        //        {
+        //            data.Add(cameras[i].CaptureDepth());
+        //        }
+        //        else
+        //        {
+        //            data.Add(cameras[i].CaptureColor());
+        //        }
+        //    }
 
-            mvis.bounds = targetRenderer.bounds;
-            mvis.imageSets = imageSets.ToArray();
-            Debug.Log("End capture target: " + targetRenderer.name + ". mode: raw.");
-        }
+        //    return data;
+        //}
+
+        //public MultiViewImageSet CaptureParameters(TargetRenderer targetRenderer)
+        //{
+        //    Debug.Log("Start capture target: " + targetRenderer.name + ". mode: parameters.");
+        //    targetRenderer.renderMode = MeshRenderMode.Depth;
+        //    var depthImgs = CaptureCameras(targetRenderer);
+        //    targetRenderer.renderMode = MeshRenderMode.Albedo;
+        //    var albedoImgs = CaptureCameras(targetRenderer);
+        //    targetRenderer.renderMode = MeshRenderMode.Parameter;
+        //    var paramImgs = CaptureCameras(targetRenderer);
+        //    targetRenderer.renderMode = MeshRenderMode.Normal;
+        //    var normalImgs = CaptureCameras(targetRenderer);
+        //    targetRenderer.renderMode = MeshRenderMode.Detail;
+        //    var detailImgs = CaptureCameras(targetRenderer);
+        //    var imageSets = new List<ImageSet>();
+        //    for (int i = 0; i < albedoImgs.Count; i++)
+        //    {
+        //        var set = new ImageSet();
+        //        set.imageToWorld = depthImgs[i].imageToWorld;
+        //        set.worldToImage = depthImgs[i].worldToImage;
+        //        set.depth = depthImgs[i].texture;
+        //        set.albedo = albedoImgs[i].texture;
+        //        set.parameters = paramImgs[i].texture;
+        //        set.normal = normalImgs[i].texture;
+        //        set.detail = detailImgs[i].texture;
+        //        imageSets.Add(set);
+        //    }
+
+        //    var mvis = new MultiViewImageSet();
+        //    mvis.bounds = targetRenderer.bounds;
+        //    mvis.imageSets = imageSets.ToArray();
+        //    Debug.Log("End capture target: " + targetRenderer.name + ". mode: parameters.");
+        //    return mvis;
+        //}
+
+        //public MultiViewImageSet CaptureRaw(TargetRenderer targetRenderer)
+        //{
+        //    Debug.Log("Start capture target: " + targetRenderer.name + ". mode: raw.");
+        //    targetRenderer.renderMode = MeshRenderMode.Shaded;
+        //    var rawImgs = CaptureCameras(targetRenderer);
+        //    var imageSets = new List<ImageSet>();
+        //    for (int i = 0; i < rawImgs.Count; i++)
+        //    {
+        //        var set = new ImageSet();
+        //        set.imageToWorld = rawImgs[i].imageToWorld;
+        //        set.worldToImage = rawImgs[i].worldToImage;
+        //        set.shaded = rawImgs[i].texture;
+        //        imageSets.Add(set);
+        //    }
+
+        //    var mvis = new MultiViewImageSet();
+        //    mvis.bounds = targetRenderer.bounds;
+        //    mvis.imageSets = imageSets.ToArray();
+        //    Debug.Log("End capture target: " + targetRenderer.name + ". mode: raw.");
+        //    return mvis;
+        //}
     }
 }
 

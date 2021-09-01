@@ -211,5 +211,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15a05cd3bc655cf4688bdbf77b9021e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sampleCount: 1
   colorRT: {fileID: 8400000, guid: 55c17850170d3f0458917e22b3b219a9, type: 2}
   depthRT: {fileID: 8400000, guid: 856af3a90eb0f234daa72ee767ad2c0c, type: 2}
