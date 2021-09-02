@@ -1,12 +1,33 @@
 ﻿using PCToolkit.Data;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace PCToolkit.Rendering
 {
+
+#if UNITY_EDITOR
+    [CustomEditor(typeof(PointCloudRenderer))]
+    public class PointCloudRendererEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+            PointCloudRenderer renderer = (PointCloudRenderer)target;
+            if (GUILayout.Button("LoadRenderData"))
+            {
+                renderer.LoadRenderData();
+            }
+        }
+    }
+
+#endif
     [ExecuteInEditMode]
     public class PointCloudRenderer : MonoBehaviour
     {
         [SerializeField] PointCloudRenderData renderData;
+        [SerializeField] string fileName;
         [SerializeField] float pointSize = 0.05f;
         [SerializeField] Shader pointShader = null;
         [SerializeField] Shader diskDhader = null;
@@ -47,6 +68,17 @@ namespace PCToolkit.Rendering
                 {
                     DestroyImmediate(pointMaterial);
                 }
+            }
+        }
+
+        public void LoadRenderData()
+        {
+            var points = Pipeline.PointCloudIO.LoadPointCloud(fileName);
+            if (points != null)
+            {
+                renderData = new PointCloudRenderData();
+                renderData.ClearComputeBuffer();
+                renderData.pointCloudBuffer = points.ToArray();
             }
         }
 

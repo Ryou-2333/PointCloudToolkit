@@ -62,7 +62,7 @@ struct Varyings
     half3 rawColor : COLOR;
     half2 m_r : TEXCOORD0;
     half3 albedo : TEXCOORD1;
-    float3 normal : TEXCOORD2;
+    half3 normal : TEXCOORD2;
     half3 detailedNormal : TEXCOORD3;
     UNITY_FOG_COORDS(0)
 };
@@ -78,14 +78,7 @@ Varyings Vertex(Attributes input)
     half2 m_r = m_r_d_a.xy;
     half3 detailedNormal = DecodeColor(asuint(m_r_d_a.z));
     half3 albedo = DecodeColor(asuint(m_r_d_a.w));
-    float3 normal = _NormalBuffer[input.vertexID].xyz;
-    // Color space convertion & applying tint
-#if !UNITY_COLORSPACE_GAMMA
-    rawCol = GammaToLinearSpace(rawCol);
-    albedo = GammaToLinearSpace(albedo);
-    detailedNormal = GammaToLinearSpace(detailedNormal);
-    normal = GammaToLinearSpace(normal);
-#endif
+    half3 normal = _NormalBuffer[input.vertexID].xyz;
     // Set vertex output.
     Varyings o;
     o.position = UnityObjectToClipPos(pos);
@@ -152,10 +145,14 @@ half4 Fragment(Varyings input) : SV_Target
     half3 detailedNormal = input.detailedNormal * DecodeRenderModParam(asuint(_RenderMod)).x;
     half3 normal = input.normal * DecodeRenderModNormal(asuint(_RenderMod));
     half3 white = half3(1, 1, 1);
-    half3 c = rc + detailedNormal + m_r.x * white + m_r.y * white + albedo;
+    half3 c = rc + detailedNormal + m_r.x * white + m_r.y * white + albedo + normal;
 
     half4 color = half4(c, 1);
     UNITY_APPLY_FOG(input.fogCoord, color);
+    // Color space convertion & applying tint
+#if !UNITY_COLORSPACE_GAMMA
+    color.rgb = GammaToLinearSpace(color.rgb);
+#endif
     return color;
 }
 

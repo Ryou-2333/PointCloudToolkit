@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using PCToolkit.Rendering;
+using System.Collections.Generic;
 
 namespace PCToolkit.Data
 {
@@ -20,32 +22,60 @@ namespace PCToolkit.Data
                 return new Vector2Int(albedo.width, albedo.height); 
             } 
         }
+
+        public void SetTexture(MeshRenderMode mode, Texture2D tex)
+        {
+            switch (mode)
+            {
+                case MeshRenderMode.Shaded:
+                    shaded = tex;
+                    return;
+                case MeshRenderMode.Albedo:
+                    albedo = tex;
+                    return;
+                case MeshRenderMode.Parameter:
+                    parameters = tex;
+                    return;
+                case MeshRenderMode.Normal:
+                    normal = tex;
+                    return;
+                case MeshRenderMode.Detail:
+                    detail = tex;
+                    return;
+                case MeshRenderMode.Depth:
+                    depth = tex;
+                    return;
+                default:
+                    throw new Exception("ImageSet RenderMode out of index.");
+            }
+        }
     }
 
     public class MultiViewImageSet
     {
         public string fileName;
         public Bounds bounds;
-        public ImageSet[] imageSets;
-        public int length { get { return imageSets.Length; } }
-        public ImageSet this[int key]
-        {
-
-            get
-            {
-                if (key < length)
-                {
-                    return imageSets[key];
-                }
-
-                throw new Exception("MultiViewImageSet out of index.");
-            }
-        }
+        public List<ImageSet> imageSets;
+        public int count { get { return imageSets.Count; } }
         public Vector2Int rect
         {
             get
             {
                 return imageSets[0].rect;
+            }
+        }
+
+        public ImageSet this[int key]
+        {
+
+            get
+            {
+                if (key < count)
+                {
+                    return imageSets[key];
+                }
+
+                throw new Exception("MultiViewImageSet out of index.");
             }
         }
     }

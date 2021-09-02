@@ -36,6 +36,7 @@ namespace PCToolkit.Data
         }
     }
 
+    [Serializable]
     public struct PCTColor
     {
         public float r;
@@ -86,12 +87,40 @@ namespace PCToolkit.Data
         public static PCTColor black {get { return new PCTColor(0, 0, 0); } }
     }
 
-    public class Point
+    [Serializable]
+    public struct PCTVector3
     {
-        public Vector3 position;
+        public float x;
+        public float y;
+        public float z;
+
+        public PCTVector3(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public PCTVector3(Vector3 v)
+        {
+            x = v.x;
+            y = v.y;
+            z = v.z;
+        }
+
+        public Vector3 xyz { get { return new Vector3(x, y, z); } }
+
+        public static implicit operator Vector3(PCTVector3 v) => v.xyz;
+        public static implicit operator PCTVector3(Vector3 v) => new PCTVector3(v);
+    }
+
+    [Serializable]
+    public struct Point
+    {
+        public PCTVector3 position;
         public PCTColor rawColor;
-        public Vector3 normal;
-        public Vector3 detailedNormal;
+        public PCTVector3 normal;
+        public PCTVector3 detailedNormal;
         public float metallic;
         public float roughness;
         public PCTColor albedo;
@@ -121,7 +150,7 @@ namespace PCToolkit.Data
 
         public ComputeBufferData PackNormal()
         {
-            return new ComputeBufferData(normal, 0);
+            return new ComputeBufferData(normal, 1);
         }
     }
 }

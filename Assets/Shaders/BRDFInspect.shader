@@ -63,9 +63,6 @@ Shader "PCTK/BRDFInspec"
                 int4 mod = DecodeRenderMod(_RenderMode);
                 // sample the texture
                 float3 albedo = tex2D(_Albedo, i.uv);
-#if !UNITY_COLORSPACE_GAMMA
-                albedo = GammaToLinearSpace(albedo);
-#endif
                 float4 m_o_d_r = tex2D(_Mask, i.uv);
                 //Output roughness metallic
                 float4 mask = float4(1 - m_o_d_r.a, m_o_d_r.r, 0, 1);
@@ -74,6 +71,9 @@ Shader "PCTK/BRDFInspec"
                 mapNormal = (mapNormal + 1) / 2;
                 float4 normal = float4((i.normal + 1) / 2, 1);
                 float4 col = float4(albedo * mod.x, 1) + mask * mod.y + normal * mod.z + mapNormal * mod.w;
+#if !UNITY_COLORSPACE_GAMMA
+                col.rgb = GammaToLinearSpace(col.rgb);
+#endif
                 return col;
             }
             ENDCG

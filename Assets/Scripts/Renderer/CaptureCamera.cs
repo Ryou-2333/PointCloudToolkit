@@ -30,9 +30,11 @@ namespace PCToolkit.Rendering
             }
         }
 
-        public void PreCpatureRaw()
+        public Matrix4x4 imageToWorld { get { return (cam.projectionMatrix * cam.worldToCameraMatrix).inverse; } }
+        public Matrix4x4 worldToImage { get { return cam.projectionMatrix * cam.worldToCameraMatrix; } }
+        public void PreCapture()
         {
-            PreCaptureColor();
+            gameObject.SetActive(true);
             if (sampleCount > 1)
             {
                 for (int i = 0; i < sampleCount - 1; i++)
@@ -42,29 +44,17 @@ namespace PCToolkit.Rendering
             }
         }
 
-        public void PreCaptureColor()
-        {
-            //cam.targetTexture = colorRT;
-            gameObject.SetActive(true);
-        }
-
-        public void PreCaptureDepth()
-        {
-            //cam.targetTexture = depthRT;
-            gameObject.SetActive(true);
-        }
-
         public CaptureData Capture()
         {
             var data = new CaptureData();
             //RenderTexture.active = cam.targetTexture;
             //var targetTexture = RenderTexture.active;
-            data.texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGBAFloat, false, true);
+            data.texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGBAFloat, false, false);
             data.texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
             data.texture.Apply();
             RenderTexture.active = null;
-            data.worldToImage = cam.projectionMatrix * cam.worldToCameraMatrix;
-            data.imageToWorld = (cam.projectionMatrix * cam.worldToCameraMatrix).inverse; ;
+            data.worldToImage = worldToImage;
+            data.imageToWorld = imageToWorld;
             data.camIndex = index;
             gameObject.SetActive(false);
             return data;

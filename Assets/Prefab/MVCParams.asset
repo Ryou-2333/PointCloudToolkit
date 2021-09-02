@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd02de4d9cb81ed4f8acc19d9abb92d5, type: 3}
   m_Name: MVCParams
   m_EditorClassIdentifier: 
-  cameraPrefab: {fileID: 183223913817312028, guid: 90d5d473b3a0ace499d7651d30cdf413, type: 3}
+  cameraPrefab: {fileID: 4828988847954735124, guid: 05eb535b0db0d814b902bd08177b98ca, type: 3}
   perLaryerCameras: 01000000040000000800000010000000080000000400000001000000
   distFactor: 1.5

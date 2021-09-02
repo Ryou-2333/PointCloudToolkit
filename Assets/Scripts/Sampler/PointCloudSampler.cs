@@ -12,7 +12,7 @@ namespace PCToolkit.Sampling
         public PointCloudSampler(MultiViewImageSet imageSets)
         {
             this.imageSets = imageSets;
-            mask = new HaltonMask(imageSets.bounds.size, imageSets.imageSets.Length, imageSets.rect.x, imageSets.rect.y, 100f);
+            mask = new HaltonMask(imageSets.bounds.size, imageSets.imageSets.Count, imageSets.rect.x, imageSets.rect.y, 100f);
         }
 
         public static Color PointSample(Texture2D sampler, Vector2Int pos)
@@ -30,12 +30,12 @@ namespace PCToolkit.Sampling
             return res;
         }
 
-        public PointCloudData SamplePoints()
+        public List<Point> SamplePoints()
         {
             var points = new List<Point>();
             var visMasks = new List<VisibilityMask>();
             // Sample point positions and parameters
-            for (int i = 0; i < imageSets.length; i++)
+            for (int i = 0; i < imageSets.count; i++)
             {
                 foreach (var sp in mask.samplePoints)
                 {
@@ -55,22 +55,21 @@ namespace PCToolkit.Sampling
                     p.metallic = param.g;
                     var normalColor = PointSample(imageSets[i].normal, sp);
                     var normal = new Vector3(normalColor.r, normalColor.g, normalColor.b);
-                    normal = normal * 2 - Vector3.one;
                     p.normal = normal;
                     var detailColor = PointSample(imageSets[i].detail, sp);
                     var detailedNormal = new Vector3(detailColor.r, detailColor.g, detailColor.b);
                     p.detailedNormal = detailedNormal;
                     var albedo = PointSample(imageSets[i].albedo, sp);
                     p.albedo = new PCTColor(albedo);
-                    var visMask = new VisibilityMask(imageSets.length);
+                    var visMask = new VisibilityMask(imageSets.count);
                     visMask[i] = true;
                     points.Add(p);
                     visMasks.Add(visMask);
                 }
             }
 
-            //// Calculate visibilities
-            for (int i = 0; i < imageSets.length; i++)
+            // Calculate visibilities
+            for (int i = 0; i < imageSets.count; i++)
             {
                 var curIndex = 0;
                 foreach (var p in points)
@@ -91,29 +90,29 @@ namespace PCToolkit.Sampling
                 }
             }
 
-            //// Sample raw colors
+            // Sample raw colors
             for (int i = 0; i < points.Count; i++)
             {
                 var weight = 1f / visMasks[i].weight;
                 Vector3 colorValues = Vector3.zero;
-                for (int j = 0; j < imageSets.length; j++)
+                for (int j = 0; j < imageSets.count; j++)
                 {
                     if (visMasks[i][j])
                     {
                         var imgPos = imageSets[j].worldToImage.MultiplyPoint(points[i].position);
                         var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[j].rect.x),
                             Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[j].rect.y));
-                        var rawColor = PointSample(imageSets[i].shaded, sp);
+                        var rawColor = PointSample(imageSets[j].shaded, sp);
                         colorValues += weight * new Vector3(rawColor.r, rawColor.g, rawColor.b);
                     }
                 }
 
-                points[i].rawColor = new PCTColor(colorValues.x, colorValues.y, colorValues.z);
+                var p = points[i];
+                p.rawColor = new PCTColor(colorValues.x, colorValues.y, colorValues.z);
+                points[i] = p; 
             }
 
-            PointCloudData data = new PointCloudData();
-            data.pointCloudBuffer = points.ToArray();
-            return data;
+            return points;
         }
     }
 }

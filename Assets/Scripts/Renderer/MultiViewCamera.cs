@@ -1,5 +1,5 @@
 ﻿using PCToolkit.Data;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -14,6 +14,20 @@ namespace PCToolkit.Rendering
         public List<CaptureCamera> cameras = new List<CaptureCamera>();
         [SerializeField] Volume globalVolume;
         public int count { get { return cameras.Count; } }
+
+        public CaptureCamera this[int key]
+        {
+
+            get
+            {
+                if (key < count)
+                {
+                    return cameras[key];
+                }
+
+                throw new Exception("MultiViewCamera out of index.");
+            }
+        }
 
         public void CalculateCameraPositions()
         {
@@ -97,7 +111,7 @@ namespace PCToolkit.Rendering
                 }
             }
 
-            var targetPos = targetRenderer.bounds.center;
+            var targetPos = targetRenderer.bounds.center + Vector3.up * (targetRenderer.bounds.size.y / 6f);
             var distance = CalculateDistance(targetRenderer);
             foreach (var offset in cameraOffsets)
             {
@@ -116,18 +130,11 @@ namespace PCToolkit.Rendering
             }
         }
 
-        public void PrepareCaptureMode(TargetRenderer targetRenderer, int camIdx)
+        public void PrepareCapture(TargetRenderer targetRenderer, int camIdx)
         {
             Debug.Log(string.Format("Capturing target: {0}, mode: {1}, camera index: {2}",
                     targetRenderer.name, targetRenderer.renderMode.ToString(), camIdx));
-            if (targetRenderer.renderMode == MeshRenderMode.Depth)
-            {
-                cameras[camIdx].PreCaptureDepth();
-            }
-            else
-            {
-                cameras[camIdx].PreCaptureColor();
-            }
+            cameras[camIdx].PreCapture();
         }
 
         public CaptureData Capture(int camIdx)

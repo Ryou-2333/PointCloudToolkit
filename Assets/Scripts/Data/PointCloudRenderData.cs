@@ -3,7 +3,6 @@
 namespace PCToolkit.Data
 {
     [CreateAssetMenu(fileName = "PointCloudRenderData", menuName = "PCTK/PointCloudRenderData", order = 2)]
-    [PreferBinarySerialization]
     public class PointCloudRenderData : ScriptableObject
     {
         public Point[] pointCloudBuffer;
@@ -87,7 +86,7 @@ namespace PCToolkit.Data
             }
         }
 
-        void ClearComputeBuffer()
+        public void ClearComputeBuffer()
         {
             if (_renderBuffer0 != null)
             {
