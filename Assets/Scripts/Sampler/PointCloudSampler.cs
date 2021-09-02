@@ -34,6 +34,9 @@ namespace PCToolkit.Sampling
         {
             var points = new List<Point>();
             var visMasks = new List<VisibilityMask>();
+            var bounds = imageSets.bounds;
+            //enlager bounds to avoid cull edge points.
+            bounds.extents *= 1.03f;
             // Sample point positions and parameters
             for (int i = 0; i < imageSets.count; i++)
             {
@@ -43,7 +46,7 @@ namespace PCToolkit.Sampling
                     var depth = DecodeDepth(encodedDepth);
                     var imgPos = new Vector3(sp.x / (float)imageSets[i].rect.x * 2f - 1f, sp.y / (float)imageSets[i].rect.y * 2f - 1f, depth);
                     var worldPos = imageSets[i].imageToWorld.MultiplyPoint(imgPos);
-                    if (!imageSets.bounds.Contains(worldPos))
+                    if (!bounds.Contains(worldPos))
                     {
                         //out of bounds.
                         continue;
