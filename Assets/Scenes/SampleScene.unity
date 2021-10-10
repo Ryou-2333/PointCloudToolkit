@@ -168,6 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startObjIdx: 1
   endObjIdx: 1
+  folderName: 002
 --- !u!1 &1145557353
 GameObject:
   m_ObjectHideFlags: 0

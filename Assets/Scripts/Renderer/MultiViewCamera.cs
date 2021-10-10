@@ -82,8 +82,7 @@ namespace PCToolkit.Rendering
 
         private float CalculateDistance(TargetRenderer targetRenderer)
         {
-
-            return targetRenderer.maxBound * parameters.distFactor;
+            return targetRenderer.bounds.size.magnitude * parameters.distFactor;
         }
 
         public void SpawnCameras(TargetRenderer targetRenderer)
@@ -92,7 +91,7 @@ namespace PCToolkit.Rendering
             {
                 if (cameras[i] != null)
                 {
-                    Destroy(cameras[i]);
+                    DestroyImmediate(cameras[i].gameObject);
                 }
             }
 
@@ -111,7 +110,7 @@ namespace PCToolkit.Rendering
                 }
             }
 
-            var targetPos = targetRenderer.bounds.center + Vector3.up * (targetRenderer.bounds.size.y / 6f);
+            var targetPos = targetRenderer.bounds.center + Vector3.up * (targetRenderer.bounds.size.y / 8f);
             var distance = CalculateDistance(targetRenderer);
             foreach (var offset in cameraOffsets)
             {

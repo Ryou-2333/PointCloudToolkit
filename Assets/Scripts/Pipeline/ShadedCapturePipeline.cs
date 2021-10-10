@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PCToolkit.Rendering;
 using PCToolkit.Data;
+using UnityEditor;
 
 namespace PCToolkit.Pipeline
 {
@@ -11,8 +12,10 @@ namespace PCToolkit.Pipeline
         [SerializeField] int startObjIdx;
         [SerializeField] int endObjIdx;
         [SerializeField] MultiViewCamera mvc;
-        [SerializeField] TargetRenderer target;
-
+        [SerializeField] GameObject ground;
+        [SerializeField] string datasetPath = "Datasets/Megascan/001";
+        
+        private TargetRenderer target;
         private int curObjIdx;
         private int curCamIdx;
         private bool firstUpdate;
@@ -24,7 +27,6 @@ namespace PCToolkit.Pipeline
             curObjIdx = startObjIdx;
             curCamIdx = 0;
             LoadTarget();
-            mvc.SpawnCameras(target);
             firstUpdate = true;
             captureEnd = false;
             RefreshImgSet();
@@ -53,8 +55,32 @@ namespace PCToolkit.Pipeline
 
         private void LoadTarget()
         {
-            //todo: Load target according to curObjIdx;
+            if (target != null)
+            {
+                Destroy(target.gameObject);
+                Resources.UnloadUnusedAssets();
+            }
+
+            int digit = 4;
+            var pow = curObjIdx / 10;
+            while (pow > 0)
+            {
+                digit--;
+                pow /= 10;
+            }
+            var curDirName = "";
+            for (int i = 0; i < digit; i++)
+            {
+                curDirName += "0";
+            }
+
+            curDirName += curObjIdx;
+            var targetPrefab = AssetDatabase.LoadAssetAtPath<TargetRenderer>(string.Format("Assets/{0}/{1}/{1}.prefab", datasetPath, curDirName));
+            target = Instantiate(targetPrefab, Vector3.zero, Quaternion.identity);
+            ground.transform.position = Vector3.up * target.bounds.min.y;
+            target.gameObject.name = curDirName;
             target.renderMode = MeshRenderMode.Shaded;
+            mvc.SpawnCameras(target);
         }
 
         private void RefreshImgSet()

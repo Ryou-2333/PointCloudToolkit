@@ -4,7 +4,7 @@ Shader "PCTK/BRDFInspec"
     {
         [MainTexture] _Albedo ("Albedo", 2D) = "black" {}
         _Mask ("Mask", 2D) = "black" {}
-        _NormalMap("Height", 2D) = "blue" {}
+        _NormalMap("NormalMap", 2D) = "blue" {}
         _RenderMode("RenderMod", int) = 1
     }
     SubShader

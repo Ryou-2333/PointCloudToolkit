@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using PCToolkit.Rendering;
 using PCToolkit.Data;
 using PCToolkit.Sampling;
 using System;
@@ -20,8 +17,21 @@ namespace PCToolkit.Pipeline
 
         public string FormatFolderName()
         {
-            //todo: return folderName according to curObjIdx.
-            return "001";
+            int digit = 4;
+            var pow = curObjIdx / 10;
+            while (pow > 0)
+            {
+                digit--;
+                pow /= 10;
+            }
+            var curDirName = "";
+            for (int i = 0; i < digit; i++)
+            {
+                curDirName += "0";
+            }
+
+            curDirName += curObjIdx;
+            return curDirName;
         }
 
         public void Sample(string folderName)
@@ -31,8 +41,11 @@ namespace PCToolkit.Pipeline
                 Debug.Log(string.Format("Sampling point cloud data for object {0}", folderName));
                 mvis = ImageSetIO.LoadImageSet(folderName);
                 var sampler = new PointCloudSampler(mvis);
-                var data = sampler.SamplePoints();
-                PointCloudIO.SavePointCloud(data, folderName);
+                var dataList = sampler.SamplePoints();
+                for (int i = 0; i < dataList.Count; i++)
+                {
+                    PointCloudIO.SavePointCloud(dataList[i], folderName, i.ToString());
+                }
             }
             catch(Exception e)
             {
@@ -43,6 +56,7 @@ namespace PCToolkit.Pipeline
 
         public void ToNextObject()
         {
+            GC.Collect();
             curObjIdx++;
             if (curObjIdx > endObjIdx)
             {

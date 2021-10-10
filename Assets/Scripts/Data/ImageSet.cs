@@ -18,8 +18,15 @@ namespace PCToolkit.Data
         public Vector2Int rect
         { 
             get 
-            { 
-                return new Vector2Int(albedo.width, albedo.height); 
+            {
+                if (depth != null)
+                {
+                    return new Vector2Int(depth.width, depth.height);
+                }
+                else
+                {
+                    return new Vector2Int(shaded.width, shaded.height);
+                }
             } 
         }
 
@@ -49,6 +56,34 @@ namespace PCToolkit.Data
                     throw new Exception("ImageSet RenderMode out of index.");
             }
         }
+
+        public void Dispose()
+        {
+            if (depth != null)
+            {
+                UnityEngine.Object.DestroyImmediate(depth);
+            }
+            if (albedo != null)
+            {
+                UnityEngine.Object.DestroyImmediate(albedo);
+            }
+            if (parameters != null)
+            {
+                UnityEngine.Object.DestroyImmediate(parameters);
+            }
+            if (normal != null)
+            {
+                UnityEngine.Object.DestroyImmediate(normal);
+            }
+            if (detail != null)
+            {
+                UnityEngine.Object.DestroyImmediate(detail);
+            }
+            if (shaded != null)
+            {
+                UnityEngine.Object.DestroyImmediate(shaded);
+            }
+        }
     }
 
     public class MultiViewImageSet
@@ -76,6 +111,14 @@ namespace PCToolkit.Data
                 }
 
                 throw new Exception("MultiViewImageSet out of index.");
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var set in imageSets)
+            {
+                set.Dispose();
             }
         }
     }

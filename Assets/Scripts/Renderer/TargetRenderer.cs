@@ -15,7 +15,7 @@ namespace PCToolkit.Rendering
     }
     public class TargetRenderer : MonoBehaviour
     {
-        public MeshRenderer mesh;
+        public MeshRenderer[] meshes;
         public Material depthMaterial;
         public Material shadingMaterial;
         public Material paramMaterial;
@@ -31,16 +31,25 @@ namespace PCToolkit.Rendering
                 _renderMode = value;
                 if (value == MeshRenderMode.Shaded)
                 {
-                    mesh.material = shadingMaterial;
+                    foreach (var mesh in meshes)
+                    {
+                        mesh.material = shadingMaterial;
+                    }
                 }
                 else if (value == MeshRenderMode.Depth)
                 {
-                    mesh.material = depthMaterial;
+                    foreach (var mesh in meshes)
+                    {
+                        mesh.material = depthMaterial;
+                    }
                 }
                 else
                 {
-                    paramMaterial.SetInt("_RenderMode", (int)value);
-                    mesh.material = paramMaterial;
+                    foreach (var mesh in meshes)
+                    {
+                        paramMaterial.SetInt("_RenderMode", (int)value);
+                        mesh.material = paramMaterial;
+                    }
                 }
             }
         }
@@ -48,14 +57,16 @@ namespace PCToolkit.Rendering
         {
             get
             {
-                return mesh.bounds;
-            }
-        }
-        public float maxBound
-        {
-            get
-            {
-                return Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
+                Vector3 min = meshes[0].bounds.min;
+                Vector3 max = meshes[0].bounds.max;
+                foreach (var mesh in meshes)
+                {
+                    min = Vector3.Min(min, mesh.bounds.min);
+                    max = Vector3.Max(max, mesh.bounds.max);
+                }
+                var bounds = new Bounds();
+                bounds.SetMinMax(min, max);
+                return bounds;
             }
         }
     }

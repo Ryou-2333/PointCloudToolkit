@@ -31,19 +31,19 @@ namespace PCToolkit.Pipeline
             }
         }
 
-        public static void SavePointCloud(List<Point> data, string fileName)
+        public static void SavePointCloud(List<Point> data, string mainName, string subName)
         {
             if (data.Count <= 0)
             {
-                Debug.LogError(string.Format("Error saving empty point clous {0}", fileName));
+                Debug.LogError(string.Format("Error saving empty point clous {0}", mainName));
                 return;
             }
 
-            var dir = string.Format("{0}/{1}/{2}/{3}", Application.dataPath, datasetDir, pointCloudDir, fileName);
+            var dir = string.Format("{0}/{1}/{2}/{3}", Application.dataPath, datasetDir, pointCloudDir, mainName);
             try
             {
                 Directory.CreateDirectory(dir);
-                using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "/" + fileName + ".points", FileMode.Create)))
+                using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "/" + mainName + "_" + subName + ".points", FileMode.Create)))
                 {
                     writer.Write(data.Count);
                     int size = SerializeToBytes(data[0]).Length;
@@ -56,7 +56,7 @@ namespace PCToolkit.Pipeline
             }
             catch(Exception e)
             {
-                Debug.LogError(string.Format("Error saving point clous {0}: {1}\n{2}", fileName, e.Message, e.StackTrace));
+                Debug.LogError(string.Format("Error saving point clous {0}_{1}: {2}\n{3}", mainName, subName, e.Message, e.StackTrace));
             }
         }
 

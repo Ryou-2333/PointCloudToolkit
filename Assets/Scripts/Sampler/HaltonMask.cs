@@ -11,7 +11,7 @@ namespace PCToolkit.Sampling
         private const float pointsUnit = 3000000f;
         private int perCamCount;
 
-        private void GenerateSequence()
+        private void GenerateSequence(int skip = 0)
         {
             samplePoints = new List<Vector2Int>();
             var haltonCount = perCamCount;
@@ -19,17 +19,20 @@ namespace PCToolkit.Sampling
             if (rect.x != rect.y)
             {
                 size = rect.x > rect.y ? rect.x : rect.y;
-                perCamCount = (int)(perCamCount * size * size / rect.x / rect.y);
+                haltonCount = (int)(perCamCount * size * size / rect.x / rect.y) + skip;
             }
 
             var haltonSeq = new HaltonSequence2D();
-            for (int i = 0; i < perCamCount; i++)
+            for (int i = 0; i < haltonCount; i++)
             {
                 haltonSeq.Increment();
-                var pointf = haltonSeq.m_CurrentPos * size;
-                if (pointf.x < rect.x && pointf.y < rect.y)
+                if (i >= skip)
                 {
-                    samplePoints.Add(new Vector2Int(Mathf.RoundToInt(pointf.x), Mathf.RoundToInt(pointf.y)));
+                    var pointf = haltonSeq.m_CurrentPos * size;
+                    if (pointf.x < rect.x && pointf.y < rect.y)
+                    {
+                        samplePoints.Add(new Vector2Int(Mathf.RoundToInt(pointf.x), Mathf.RoundToInt(pointf.y)));
+                    }
                 }
             }
         }
