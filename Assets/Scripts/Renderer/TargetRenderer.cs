@@ -1,7 +1,33 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace PCToolkit.Rendering
 {
+#if UNITY_EDITOR
+    [CustomEditor(typeof(TargetRenderer))]
+    public class TargetRendererEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+            TargetRenderer renderer = (TargetRenderer)target;
+            if (GUILayout.Button("Show Bounds"))
+            {
+                ShowBounds(renderer);
+            }
+        }
+
+        public void ShowBounds(TargetRenderer renderer)
+        {
+            var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.localScale = renderer.bounds.size;
+            cube.transform.position = renderer.bounds.center;
+        }
+    }
+
+#endif
 
     public enum MeshRenderMode
     {
@@ -19,6 +45,7 @@ namespace PCToolkit.Rendering
         public Material depthMaterial;
         public Material shadingMaterial;
         public Material paramMaterial;
+        public Bounds bounds;
         public MeshRenderMode _renderMode;
         public MeshRenderMode renderMode
         {
@@ -53,22 +80,8 @@ namespace PCToolkit.Rendering
                 }
             }
         }
-        public Bounds bounds
-        {
-            get
-            {
-                Vector3 min = meshes[0].bounds.min;
-                Vector3 max = meshes[0].bounds.max;
-                foreach (var mesh in meshes)
-                {
-                    min = Vector3.Min(min, mesh.bounds.min);
-                    max = Vector3.Max(max, mesh.bounds.max);
-                }
-                var bounds = new Bounds();
-                bounds.SetMinMax(min, max);
-                return bounds;
-            }
-        }
+
+
     }
 }
 

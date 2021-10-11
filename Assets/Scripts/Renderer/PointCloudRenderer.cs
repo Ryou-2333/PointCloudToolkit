@@ -27,7 +27,8 @@ namespace PCToolkit.Rendering
     public class PointCloudRenderer : MonoBehaviour
     {
         [SerializeField] PointCloudRenderData renderData;
-        [SerializeField] string fileName;
+        [SerializeField] string mainName;
+        [SerializeField] string subName;
         [SerializeField] float pointSize = 0.05f;
         [SerializeField] Shader pointShader = null;
         [SerializeField] Shader diskDhader = null;
@@ -73,7 +74,7 @@ namespace PCToolkit.Rendering
 
         public void LoadRenderData()
         {
-            var points = Pipeline.PointCloudIO.LoadPointCloud(fileName);
+            var points = Pipeline.PointCloudIO.LoadPointCloud(mainName, subName);
             if (points != null)
             {
                 renderData = new PointCloudRenderData();

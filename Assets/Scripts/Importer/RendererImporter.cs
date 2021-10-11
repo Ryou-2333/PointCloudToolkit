@@ -136,20 +136,63 @@ namespace PCToolkit.Pipeline
                             targetRenderer = go.AddComponent<TargetRenderer>();
                         }
 
-                        if (go.transform.childCount <= 0)
+                        if (targetRenderer.meshes == null || targetRenderer.meshes.Length == 0)
                         {
+                            targetRenderer.meshes = targetRenderer.gameObject.GetComponentsInChildren<MeshRenderer>();
+                        }
+
+                        if (targetRenderer.meshes == null || targetRenderer.meshes.Length == 0)
+                        {
+                            var childCount = go.transform.childCount;
+                            for (int i = childCount - 1; i >= 0; i--)
+                            {
+                                DestroyImmediate(go.transform.GetChild(i).gameObject);
+                            }
+
                             var modelGO = Instantiate(model, go.transform);
                             modelGO.name = model.name;
                             targetRenderer.meshes = modelGO.GetComponentsInChildren<MeshRenderer>();
-                        }
-                        else if (targetRenderer.meshes == null)
-                        {
-                            targetRenderer.meshes = targetRenderer.gameObject.GetComponentsInChildren<MeshRenderer>();
                         }
 
                         targetRenderer.depthMaterial = depthMat;
                         targetRenderer.shadingMaterial = shadingMat;
                         targetRenderer.paramMaterial = paramMat;
+                        var bounds = new Bounds();
+                        {
+                            //Caculate bounds
+                            Vector3 min = targetRenderer.meshes[0].bounds.min;
+                            Vector3 max = targetRenderer.meshes[0].bounds.max;
+                            foreach (var mesh in targetRenderer.meshes)
+                            {
+                                min = Vector3.Min(min, mesh.bounds.min);
+                                max = Vector3.Max(max, mesh.bounds.max);
+                            }
+
+                            bounds.SetMinMax(min, max);
+                        }
+
+                        var maxSize = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+                        if (maxSize < 0.61f || maxSize > 1f)
+                        {
+                            //Adjust scale
+                            var scale = 0.61f / maxSize;
+                            var modelTrans = go.transform.GetChild(0);
+                            modelTrans.localScale = Vector3.one * scale;
+                            {
+                                //Caculate new bounds
+                                Vector3 min = targetRenderer.meshes[0].bounds.min;
+                                Vector3 max = targetRenderer.meshes[0].bounds.max;
+                                foreach (var mesh in targetRenderer.meshes)
+                                {
+                                    min = Vector3.Min(min, mesh.bounds.min);
+                                    max = Vector3.Max(max, mesh.bounds.max);
+                                }
+
+                                bounds.SetMinMax(min, max);
+                            }
+                        }
+
+                        targetRenderer.bounds = bounds;
                         PrefabUtility.SaveAsPrefabAsset(targetRenderer.gameObject, prefabPath);
                     }
                 }

@@ -8,7 +8,7 @@ namespace PCToolkit.Sampling
     {
         public List<Vector2Int> samplePoints { get; private set; }
         private Vector2 rect;
-        private const float pointsUnit = 3000000f;
+        private const float pointsUnit = 1000000f;
         private int perCamCount;
 
         private void GenerateSequence(int skip = 0)
@@ -37,10 +37,10 @@ namespace PCToolkit.Sampling
             }
         }
 
-        public HaltonMask(Vector3 volume, int cameraCount = 64, float width = 1024f, float height = 1024f, float density = 20f)
+        public HaltonMask(int cameraCount = 64, float width = 1024f, float height = 1024f, float density = 1f)
         {
             rect = new Vector2(width, height);
-            var sumCount = volume.x * volume.y * volume.z * pointsUnit * density;
+            var sumCount = pointsUnit * density;
             perCamCount = (int)(sumCount / cameraCount);
             GenerateSequence();
         }

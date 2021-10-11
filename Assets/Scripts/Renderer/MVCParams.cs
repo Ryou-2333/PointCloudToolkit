@@ -8,7 +8,7 @@ namespace PCToolkit.Rendering
     {
         public CaptureCamera cameraPrefab;
         public int[] perLaryerCameras;
-        public float distFactor = 1.3f;
+        public float distFactor = 2f;
     }
 }
 

@@ -115,7 +115,7 @@ namespace PCToolkit.Rendering
             foreach (var offset in cameraOffsets)
             {
                 var pos = offset * distance + targetPos;
-                if (pos.y < 0)
+                if (pos.y < targetRenderer.bounds.min.y)
                 {
                     //under ground camera is not realistic.
                     continue;

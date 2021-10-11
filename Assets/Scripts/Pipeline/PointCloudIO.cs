@@ -60,9 +60,9 @@ namespace PCToolkit.Pipeline
             }
         }
 
-        public static List<Point> LoadPointCloud(string fileName)
+        public static List<Point> LoadPointCloud(string mainName, string subName)
         {
-            var filePath = string.Format("{0}/{1}/{2}/{3}/{3}.points", Application.dataPath, datasetDir, pointCloudDir, fileName);
+            var filePath = string.Format("{0}/{1}/{2}/{3}/{3}_{4}.points", Application.dataPath, datasetDir, pointCloudDir, mainName, subName);
             try
             {
                 var points = new List<Point>();

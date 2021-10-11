@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4828988847954735127}
   - component: {fileID: 4828988847954735124}
   m_Layer: 0
-  m_Name: ShadedCaptureCamera
+  m_Name: CaptureCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,8 +57,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.01
-  far clip plane: 100
+  near clip plane: 0.3
+  far clip plane: 12
   field of view: 60
   orthographic: 0
   orthographic size: 5

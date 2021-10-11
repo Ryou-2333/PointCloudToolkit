@@ -19,7 +19,7 @@ namespace PCToolkit.Sampling
             var secondMaxLen = Mathf.Max(Mathf.Min(totalBounds.size.x, totalBounds.size.y), Mathf.Min(totalBounds.size.y, totalBounds.size.z), Mathf.Min(totalBounds.size.x, totalBounds.size.z));
             var devide = maxLen / secondMaxLen;
             devide = Mathf.FloorToInt(devide);
-            mask = new HaltonMask(imageSets.bounds.size, imageSets.imageSets.Count, imageSets.rect.x, imageSets.rect.y, devide);
+            mask = new HaltonMask(imageSets.imageSets.Count, imageSets.rect.x, imageSets.rect.y, devide);
             if (devide >= 2)
             {
                 var step = 1f / devide;
@@ -40,6 +40,7 @@ namespace PCToolkit.Sampling
 
                     var bounds = new Bounds();
                     bounds.SetMinMax(newMin, newMax);
+                    bounds.extents *= 1.05f;
                     subBoundsList.Add(bounds);
                 }
             }
@@ -54,7 +55,21 @@ namespace PCToolkit.Sampling
             return sampler.GetPixel(pos.x, pos.y);
         }
 
-        const float factor1 = 128f;
+        public static float FilterSample(Texture2D sampler, Vector2Int pos)
+        {
+            var a = sampler.GetPixel(pos.x, pos.y).a / 9f;
+            a += sampler.GetPixel(pos.x + 3, pos.y + 3).a / 9f;
+            a += sampler.GetPixel(pos.x - 3, pos.y + 3).a / 9f;
+            a += sampler.GetPixel(pos.x + 3, pos.y - 3).a / 9f;
+            a += sampler.GetPixel(pos.x - 3, pos.y - 3).a / 9f;
+            a += sampler.GetPixel(pos.x + 6, pos.y).a / 9f;
+            a += sampler.GetPixel(pos.x - 6, pos.y).a / 9f;
+            a += sampler.GetPixel(pos.x, pos.y + 6).a / 9f;
+            a += sampler.GetPixel(pos.x, pos.y - 6).a / 9f;
+            return a;
+        }
+
+        const float factor1 = 128;
         const float factor2 = factor1 * factor1;
         const float factor3 = factor2 * factor1;
         private static float DecodeDepth(Color encodedDepth)
@@ -74,12 +89,17 @@ namespace PCToolkit.Sampling
             var visMasks = new List<VisibilityMask>();
             var maxBounds = totalBounds;
             //enlager bounds to avoid cull edge points.
-            maxBounds.extents *= 1.03f;
+            maxBounds.extents *= 1.05f;
             // Sample point positions and parameters
             for (int imgIdx = 0; imgIdx < imageSets.count; imgIdx++)
             {
                 foreach (var sp in mask.samplePoints)
                 {
+                    if (FilterSample(imageSets[imgIdx].normal, sp) < 0.95f)
+                    {
+                        continue;
+                    }
+
                     var encodedDepth = PointSample(imageSets[imgIdx].depth, sp);
                     var depth = DecodeDepth(encodedDepth);
                     var imgPos = new Vector3(sp.x / (float)imageSets[imgIdx].rect.x * 2f - 1f, sp.y / (float)imageSets[imgIdx].rect.y * 2f - 1f, depth);

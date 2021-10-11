@@ -8,7 +8,7 @@ namespace PCToolkit.Test
         void Start()
         {
             var cam = Camera.main;
-            mask = new Sampling.HaltonMask(Vector3.one * 2, 56, 1024, 768);
+            mask = new Sampling.HaltonMask(56, 1024, 768);
             for (int i = 0; i < mask.samplePoints.Count; i++)
             {
                 GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
