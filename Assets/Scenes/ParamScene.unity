@@ -369,10 +369,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f6a6f2dda69d4c4c9c2547d554a3f59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startObjIdx: 3
-  endObjIdx: 3
+  startObjIdx: 1131
+  endObjIdx: 1978
   mvc: {fileID: 1188407128}
-  datasetPath: Datasets/Megascan/001
+  datasetPath: Datasets/Megascan/002
 --- !u!4 &134914907
 Transform:
   m_ObjectHideFlags: 0

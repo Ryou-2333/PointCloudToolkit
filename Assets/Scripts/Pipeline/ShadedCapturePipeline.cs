@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using PCToolkit.Rendering;
 using PCToolkit.Data;
 using UnityEditor;
@@ -14,7 +15,11 @@ namespace PCToolkit.Pipeline
         [SerializeField] MultiViewCamera mvc;
         [SerializeField] GameObject ground;
         [SerializeField] string datasetPath = "Datasets/Megascan/001";
-        
+        [SerializeField] List<Material> groundMats;
+        [SerializeField] Volume volume;
+        [SerializeField] Light directional;
+        [SerializeField] string variant;
+
         private TargetRenderer target;
         private int curObjIdx;
         private int curCamIdx;
@@ -24,6 +29,7 @@ namespace PCToolkit.Pipeline
 
         private void Awake()
         {
+            Random.InitState(System.DateTime.Now.Millisecond);
             curObjIdx = startObjIdx;
             curCamIdx = 0;
             LoadTarget();
@@ -53,11 +59,21 @@ namespace PCToolkit.Pipeline
             ToNextCapture();
         }
 
+        public void ChangeLightAndDround()
+        {
+            float rndX = Random.Range(30, 60);
+            float rndY = Random.Range(0, 360);
+            directional.transform.rotation = Quaternion.Euler(rndX, rndY, 0);
+            int rndIdx = Random.Range(0, groundMats.Count);
+            ground.GetComponent<Renderer>().material = groundMats[rndIdx];
+        }
+
         private void LoadTarget()
         {
             if (target != null)
             {
                 Destroy(target.gameObject);
+                ChangeLightAndDround();
                 Resources.UnloadUnusedAssets();
             }
 
@@ -86,6 +102,7 @@ namespace PCToolkit.Pipeline
         private void RefreshImgSet()
         {
             mvis = new MultiViewImageSet();
+            mvis.variantName = variant;
             mvis.fileName = target.name;
             mvis.bounds = target.bounds;
             mvis.imageSets = new List<ImageSet>();

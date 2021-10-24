@@ -29,6 +29,7 @@ namespace PCToolkit.Rendering
         [SerializeField] PointCloudRenderData renderData;
         [SerializeField] string mainName;
         [SerializeField] string subName;
+        [SerializeField] string variantName;
         [SerializeField] float pointSize = 0.05f;
         [SerializeField] Shader pointShader = null;
         [SerializeField] Shader diskDhader = null;
@@ -74,7 +75,7 @@ namespace PCToolkit.Rendering
 
         public void LoadRenderData()
         {
-            var points = Pipeline.PointCloudIO.LoadPointCloud(mainName, subName);
+            var points = Pipeline.PointCloudIO.LoadPointCloud(mainName, subName, variantName);
             if (points != null)
             {
                 renderData = new PointCloudRenderData();

@@ -34,23 +34,23 @@ Shader "PCTK/DepthInspect"
                 return o;
             }
 
-            half4 EncodeDepth(float depth)
+            float4 EncodeDepth(float depth)
             {
-                float factor1 = 128;
-                float factor2 = factor1 * factor1;
-                float factor3 = factor2 * factor1;
-                float factor4 = factor3 * factor1;
-                float depth0 = floor(depth * factor1) / factor1;
-                float depth1 = (floor(depth * factor2) % factor1) / factor1;
-                float depth2 = (floor(depth * factor3) % factor1) / factor1;
-                float depth3 = (floor(depth * factor4) % factor1) / factor1;
-                return half4(depth0, depth1, depth2, depth3);
+                uint factor1 = 64;
+                uint factor2 = factor1 * factor1;
+                uint factor3 = factor2 * factor1;
+                uint factor4 = factor3 * factor1;
+                float depth0 = (float)floor(depth * factor1) / factor1;
+                float depth1 = (float)(floor(depth * factor2) - depth0 * factor2) / factor1;
+                float depth2 = (float)(floor(depth * factor3) - depth0 * factor3 - depth1 * factor2) / factor1;
+                float depth3 = (float)(floor(depth * factor4) - depth0 * factor4 - depth1 * factor3 - depth2 * factor2) / factor1;
+                return float4(depth0, depth1, depth2, depth3);
             }
 
             half4 frag(v2f i) : SV_Target
             {
                 float customDepth = i.vertex.z;
-                half4 encoded = EncodeDepth(customDepth);
+                float4 encoded = EncodeDepth(customDepth);
 #if !UNITY_COLORSPACE_GAMMA
                 encoded.rgb = GammaToLinearSpace(encoded.rgb);
 #endif

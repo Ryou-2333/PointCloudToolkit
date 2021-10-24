@@ -14,6 +14,7 @@ namespace PCToolkit.Pipeline
         private MultiViewImageSet mvis;
         bool endSample;
         bool firstUpdate;
+        public string variant;
 
         public string FormatFolderName()
         {
@@ -39,12 +40,12 @@ namespace PCToolkit.Pipeline
             try
             {
                 Debug.Log(string.Format("Sampling point cloud data for object {0}", folderName));
-                mvis = ImageSetIO.LoadImageSet(folderName);
+                mvis = ImageSetIO.LoadImageSet(folderName, variant);
                 var sampler = new PointCloudSampler(mvis);
                 var dataList = sampler.SamplePoints();
                 for (int i = 0; i < dataList.Count; i++)
                 {
-                    PointCloudIO.SavePointCloud(dataList[i], folderName, i.ToString());
+                    PointCloudIO.SavePointCloud(dataList[i], folderName, i.ToString(), variant);
                 }
             }
             catch(Exception e)
@@ -56,6 +57,7 @@ namespace PCToolkit.Pipeline
 
         public void ToNextObject()
         {
+            Resources.UnloadUnusedAssets();
             GC.Collect();
             curObjIdx++;
             if (curObjIdx > endObjIdx)

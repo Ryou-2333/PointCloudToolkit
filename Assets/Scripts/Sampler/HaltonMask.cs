@@ -8,7 +8,7 @@ namespace PCToolkit.Sampling
     {
         public List<Vector2Int> samplePoints { get; private set; }
         private Vector2 rect;
-        private const float pointsUnit = 1000000f;
+        private const float pointsUnit = 500000f;
         private int perCamCount;
 
         private void GenerateSequence(int skip = 0)
@@ -23,26 +23,28 @@ namespace PCToolkit.Sampling
             }
 
             var haltonSeq = new HaltonSequence2D();
+            for (int i = 0; i < skip; i++)
+            {
+                haltonSeq.Increment();
+            }
+
             for (int i = 0; i < haltonCount; i++)
             {
                 haltonSeq.Increment();
-                if (i >= skip)
+                var pointf = haltonSeq.m_CurrentPos * size;
+                if (pointf.x < rect.x && pointf.y < rect.y)
                 {
-                    var pointf = haltonSeq.m_CurrentPos * size;
-                    if (pointf.x < rect.x && pointf.y < rect.y)
-                    {
-                        samplePoints.Add(new Vector2Int(Mathf.RoundToInt(pointf.x), Mathf.RoundToInt(pointf.y)));
-                    }
+                    samplePoints.Add(new Vector2Int(Mathf.RoundToInt(pointf.x), Mathf.RoundToInt(pointf.y)));
                 }
             }
         }
 
-        public HaltonMask(int cameraCount = 64, float width = 1024f, float height = 1024f, float density = 1f)
+        public HaltonMask(int cameraCount = 64, float width = 1024f, float height = 1024f, float density = 1f, int variant = 0)
         {
             rect = new Vector2(width, height);
             var sumCount = pointsUnit * density;
             perCamCount = (int)(sumCount / cameraCount);
-            GenerateSequence();
+            GenerateSequence(variant * perCamCount);
         }
 
     }

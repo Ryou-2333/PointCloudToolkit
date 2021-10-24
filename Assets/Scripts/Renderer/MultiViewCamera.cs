@@ -110,7 +110,7 @@ namespace PCToolkit.Rendering
                 }
             }
 
-            var targetPos = targetRenderer.bounds.center + Vector3.up * (targetRenderer.bounds.size.y / 8f);
+            var targetPos = targetRenderer.bounds.center;
             var distance = CalculateDistance(targetRenderer);
             foreach (var offset in cameraOffsets)
             {

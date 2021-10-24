@@ -8,7 +8,7 @@ namespace PCToolkit.Pipeline
 {
     public class RendererImporter : MonoBehaviour
     {
-        static string datasetPath = "Datasets/Megascan/001";
+        static string datasetPath = "Datasets/Megascan/002";
         [MenuItem("PCToolkit/Change Textures settings")]
         static void ReimportMaskAndNormal()
         {
@@ -112,6 +112,8 @@ namespace PCToolkit.Pipeline
                     }
 
                     AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
+
                     if (!hasPrefab)
                     {
                         var go = new GameObject
@@ -119,10 +121,8 @@ namespace PCToolkit.Pipeline
                             name = dir.Name
                         };
                         targetRenderer = go.AddComponent<TargetRenderer>();
-                        var modelGO = Instantiate(model, go.transform);
-                        modelGO.name = model.name;
-                        targetRenderer.meshes = modelGO.GetComponentsInChildren<MeshRenderer>();
                         PrefabUtility.SaveAsPrefabAsset(targetRenderer.gameObject, prefabPath);
+                        AssetDatabase.Refresh();
                         DestroyImmediate(go);
                     }
 
@@ -172,28 +172,26 @@ namespace PCToolkit.Pipeline
                         }
 
                         var maxSize = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-                        if (maxSize < 0.61f || maxSize > 1f)
+                        //Adjust scale
+                        var scale = 0.61f / maxSize;
+                        var modelTrans = go.transform.GetChild(0);
+                        modelTrans.localScale = Vector3.one * scale;
                         {
-                            //Adjust scale
-                            var scale = 0.61f / maxSize;
-                            var modelTrans = go.transform.GetChild(0);
-                            modelTrans.localScale = Vector3.one * scale;
+                            //Caculate new bounds
+                            Vector3 min = targetRenderer.meshes[0].bounds.min;
+                            Vector3 max = targetRenderer.meshes[0].bounds.max;
+                            foreach (var mesh in targetRenderer.meshes)
                             {
-                                //Caculate new bounds
-                                Vector3 min = targetRenderer.meshes[0].bounds.min;
-                                Vector3 max = targetRenderer.meshes[0].bounds.max;
-                                foreach (var mesh in targetRenderer.meshes)
-                                {
-                                    min = Vector3.Min(min, mesh.bounds.min);
-                                    max = Vector3.Max(max, mesh.bounds.max);
-                                }
-
-                                bounds.SetMinMax(min, max);
+                                min = Vector3.Min(min, mesh.bounds.min);
+                                max = Vector3.Max(max, mesh.bounds.max);
                             }
+
+                            bounds.SetMinMax(min, max);
                         }
 
                         targetRenderer.bounds = bounds;
                         PrefabUtility.SaveAsPrefabAsset(targetRenderer.gameObject, prefabPath);
+                        AssetDatabase.Refresh();
                     }
                 }
                 catch (Exception e)
@@ -203,6 +201,32 @@ namespace PCToolkit.Pipeline
             }
 
             Debug.Log("Generating materials and renderers end.");
+        }
+
+        [MenuItem("PCToolkit/Delete Target Renderers")]
+        static void DeleteTargetRenderers()
+        {
+            DirectoryInfo root = new DirectoryInfo(Application.dataPath + "/" + datasetPath);
+            var dirs = root.GetDirectories();
+            foreach (var dir in dirs)
+            {
+                Debug.Log(string.Format("Start deleting rederers for {0}/{1}", dir.Name, dirs.Length));
+                try
+                {
+                    var hasPrefab = File.Exists(string.Format("{0}/{1}/{2}/{2}.prefab", Application.dataPath, datasetPath, dir.Name));
+                    if (hasPrefab)
+                    {
+                        File.Delete(string.Format("{0}/{1}/{2}/{2}.prefab", Application.dataPath, datasetPath, dir.Name));
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(string.Format("Delete renderer failed of {0}. Error: {1}\nStack Trace: {2}", dir.Name, e.Message, e.StackTrace));
+                }
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log("Delete renderers end.");
         }
     }
 }

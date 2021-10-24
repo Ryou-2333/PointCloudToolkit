@@ -89,6 +89,7 @@ namespace PCToolkit.Data
     public class MultiViewImageSet
     {
         public string fileName;
+        public string variantName;
         public Bounds bounds;
         public List<ImageSet> imageSets;
         public int count { get { return imageSets.Count; } }

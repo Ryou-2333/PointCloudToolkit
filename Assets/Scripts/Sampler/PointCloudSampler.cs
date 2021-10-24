@@ -1,6 +1,7 @@
 using UnityEngine;
 using PCToolkit.Data;
 using System.Collections.Generic;
+using System;
 
 namespace PCToolkit.Sampling
 {
@@ -19,7 +20,13 @@ namespace PCToolkit.Sampling
             var secondMaxLen = Mathf.Max(Mathf.Min(totalBounds.size.x, totalBounds.size.y), Mathf.Min(totalBounds.size.y, totalBounds.size.z), Mathf.Min(totalBounds.size.x, totalBounds.size.z));
             var devide = maxLen / secondMaxLen;
             devide = Mathf.FloorToInt(devide);
-            mask = new HaltonMask(imageSets.imageSets.Count, imageSets.rect.x, imageSets.rect.y, devide);
+            var variant = 0;
+            if (!string.IsNullOrEmpty(imageSets.variantName))
+            {
+                variant = int.Parse(imageSets.variantName);
+            }
+
+            mask = new HaltonMask(imageSets.imageSets.Count, imageSets.rect.x, imageSets.rect.y, devide, variant);
             if (devide >= 2)
             {
                 var step = 1f / devide;
@@ -69,12 +76,12 @@ namespace PCToolkit.Sampling
             return a;
         }
 
-        const float factor1 = 128;
-        const float factor2 = factor1 * factor1;
-        const float factor3 = factor2 * factor1;
+        const uint factor1 = 64;
+        const uint factor2 = factor1 * factor1;
+        const uint factor3 = factor2 * factor1;
         private static float DecodeDepth(Color encodedDepth)
         {
-            var depth = encodedDepth.r + encodedDepth.g / factor1 + encodedDepth.b / factor2 + encodedDepth.a / factor3;
+            float depth = encodedDepth.r + encodedDepth.g / factor1 + encodedDepth.b / factor2 + encodedDepth.a / factor3;
             var res = 1 - depth * 2;
             return res;
         }
@@ -86,7 +93,12 @@ namespace PCToolkit.Sampling
             {
                 pointList.Add(new List<Point>());
             }
-            var visMasks = new List<VisibilityMask>();
+            var visMasks = new List<List<VisibilityMask>>();
+            foreach (var bounds in subBoundsList)
+            {
+                visMasks.Add(new List<VisibilityMask>());
+            }
+
             var maxBounds = totalBounds;
             //enlager bounds to avoid cull edge points.
             maxBounds.extents *= 1.05f;
@@ -95,7 +107,7 @@ namespace PCToolkit.Sampling
             {
                 foreach (var sp in mask.samplePoints)
                 {
-                    if (FilterSample(imageSets[imgIdx].normal, sp) < 0.95f)
+                    if (FilterSample(imageSets[imgIdx].normal, sp) < 0.99f)
                     {
                         continue;
                     }
@@ -124,27 +136,28 @@ namespace PCToolkit.Sampling
                     p.albedo = new PCTColor(albedo);
                     var visMask = new VisibilityMask(imageSets.count);
                     visMask[imgIdx] = true;
-                    visMasks.Add(visMask);
 
                     for (int boundsIdx = 0; boundsIdx < subBoundsList.Count; boundsIdx++)
                     {
                         if (subBoundsList[boundsIdx].Contains(p.position))
                         {
                             pointList[boundsIdx].Add(p);
+                            visMasks[boundsIdx].Add(visMask);
                         }
                     }
                 }
             }
 
+            GC.Collect();
             // Calculate visibilities
             for (int i = 0; i < imageSets.count; i++)
             {
-                var curIndex = 0;
-                foreach (var points in pointList)
+                for (int j = 0; j < pointList.Count; j++)
                 {
-                    foreach (var p in points)
+                    var curIndex = 0;
+                    foreach (var p in pointList[j])
                     {
-                        if (!visMasks[curIndex][i])
+                        if (!visMasks[j][curIndex][i])
                         {
                             var imgPos = imageSets[i].worldToImage.MultiplyPoint(p.position);
                             var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[i].rect.x),
@@ -153,7 +166,7 @@ namespace PCToolkit.Sampling
                             // Visibility check
                             if (Mathf.Abs(curDepth - imgPos.z) <= 0.001f)
                             {
-                                visMasks[curIndex][i] = true;
+                                visMasks[j][curIndex][i] = true;
                             }
                         }
                         curIndex++;
@@ -161,31 +174,33 @@ namespace PCToolkit.Sampling
                 }
             }
 
-            foreach (var points in pointList)
+            GC.Collect();
+            for (int j = 0; j < pointList.Count; j++)
             {
                 // Sample raw colors
-                for (int i = 0; i < points.Count; i++)
+                for (int i = 0; i < pointList[j].Count; i++)
                 {
-                    var weight = 1f / visMasks[i].weight;
+                    var weight = 1f / visMasks[j][i].weight;
                     Vector3 colorValues = Vector3.zero;
-                    for (int j = 0; j < imageSets.count; j++)
+                    for (int k = 0; k < imageSets.count; k++)
                     {
-                        if (visMasks[i][j])
+                        if (visMasks[j][i][k])
                         {
-                            var imgPos = imageSets[j].worldToImage.MultiplyPoint(points[i].position);
-                            var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[j].rect.x),
-                                Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[j].rect.y));
-                            var rawColor = PointSample(imageSets[j].shaded, sp);
+                            var imgPos = imageSets[k].worldToImage.MultiplyPoint(pointList[j][i].position);
+                            var sp = new Vector2Int(Mathf.RoundToInt((imgPos.x + 1f) / 2f * imageSets[k].rect.x),
+                                Mathf.RoundToInt((imgPos.y + 1f) / 2f * imageSets[k].rect.y));
+                            var rawColor = PointSample(imageSets[k].shaded, sp);
                             colorValues += weight * new Vector3(rawColor.r, rawColor.g, rawColor.b);
                         }
                     }
 
-                    var p = points[i];
+                    var p = pointList[j][i];
                     p.rawColor = new PCTColor(colorValues.x, colorValues.y, colorValues.z);
-                    points[i] = p;
+                    pointList[j][i] = p;
                 }
             }
 
+            GC.Collect();
             return pointList;
         }
     }

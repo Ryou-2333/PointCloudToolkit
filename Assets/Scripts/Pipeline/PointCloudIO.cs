@@ -31,7 +31,7 @@ namespace PCToolkit.Pipeline
             }
         }
 
-        public static void SavePointCloud(List<Point> data, string mainName, string subName)
+        public static void SavePointCloud(List<Point> data, string mainName, string subName, string variant)
         {
             if (data.Count <= 0)
             {
@@ -43,7 +43,17 @@ namespace PCToolkit.Pipeline
             try
             {
                 Directory.CreateDirectory(dir);
-                using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "/" + mainName + "_" + subName + ".points", FileMode.Create)))
+                var filename = "";
+                if (!string.IsNullOrEmpty(variant))
+                {
+                    filename = string.Format("{0}/{1}_{2}_{3}.points", dir, mainName, subName, variant);
+                }
+                else 
+                {
+                    filename = string.Format("{0}/{1}_{2}.points", dir, mainName, subName);
+                }
+
+                using (BinaryWriter writer = new BinaryWriter(File.Open(filename, FileMode.Create)))
                 {
                     writer.Write(data.Count);
                     int size = SerializeToBytes(data[0]).Length;
@@ -60,9 +70,18 @@ namespace PCToolkit.Pipeline
             }
         }
 
-        public static List<Point> LoadPointCloud(string mainName, string subName)
+        public static List<Point> LoadPointCloud(string mainName, string subName, string variantName)
         {
-            var filePath = string.Format("{0}/{1}/{2}/{3}/{3}_{4}.points", Application.dataPath, datasetDir, pointCloudDir, mainName, subName);
+            var dir = string.Format("{0}/{1}/{2}", Application.dataPath, datasetDir, pointCloudDir);
+            string filePath;
+            if (string.IsNullOrEmpty(variantName))
+            {
+                filePath = string.Format("{0}/{1}/{1}_{2}.points", dir, mainName, subName);
+            }
+            else 
+            {
+                filePath = string.Format("{0}/{1}/{1}_{2}_{3}.points", dir, mainName, subName, variantName);
+            }
             try
             {
                 var points = new List<Point>();

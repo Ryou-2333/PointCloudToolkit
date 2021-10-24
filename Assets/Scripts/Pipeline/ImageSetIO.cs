@@ -78,13 +78,21 @@ namespace PCToolkit.Pipeline
                 if (mvis[i].shaded != null)
                 {
                     var bytes = mvis[i].shaded.EncodeToPNG();
-                    var filename = string.Format("{0}_{1}.png", i, MeshRenderMode.Shaded.ToString());
+                    string filename;
+                    if (string.IsNullOrEmpty(mvis.variantName))
+                    {
+                        filename = string.Format("{0}_{1}.png", i, MeshRenderMode.Shaded.ToString());
+                    }
+                    else
+                    {
+                        filename = string.Format("{0}_{1}_{2}.png", i, MeshRenderMode.Shaded.ToString(), mvis.variantName);
+                    }
                     File.WriteAllBytes(string.Format("{0}/{1}", dir, filename), bytes);
                 }
             }
         }
 
-        public static MultiViewImageSet LoadImageSet(string dirName)
+        public static MultiViewImageSet LoadImageSet(string dirName, string variant)
         {
             var dir = string.Format("{0}/{1}/{2}/{3}", Application.dataPath, datasetDir, imageSetDir, dirName);
             try
@@ -94,6 +102,7 @@ namespace PCToolkit.Pipeline
                 var mvis = new MultiViewImageSet();
                 mvis.bounds = mvcInfo.bounds;
                 mvis.imageSets = new List<ImageSet>();
+                mvis.variantName = variant;
                 // iterate camera index
                 for (int i = 0; i < mvcInfo.imageToWorlds.Count; i++)
                 {
@@ -131,7 +140,15 @@ namespace PCToolkit.Pipeline
                     detailTex.LoadImage(pngBytes);
                     imageSet.detail = detailTex;
                     //shaded
-                    filename = string.Format("{0}_{1}.png", i, MeshRenderMode.Shaded.ToString());
+                    if (string.IsNullOrEmpty(variant))
+                    {
+                        filename = string.Format("{0}_{1}.png", i, MeshRenderMode.Shaded.ToString());
+                    }
+                    else
+                    {
+                        filename = string.Format("{0}_{1}_{2}.png", i, MeshRenderMode.Shaded.ToString(), variant);
+                    }
+
                     pngBytes = File.ReadAllBytes(string.Format("{0}/{1}", dir, filename));
                     Texture2D rawTex = new Texture2D(mvcInfo.rect.x, mvcInfo.rect.y, TextureFormat.RGBAFloat, false, false);
                     rawTex.LoadImage(pngBytes);
