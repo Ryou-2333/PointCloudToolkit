@@ -168,7 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startObjIdx: 1
   endObjIdx: 1978
-  variant: 1
+  variant: 2
 --- !u!1 &1145557353
 GameObject:
   m_ObjectHideFlags: 0

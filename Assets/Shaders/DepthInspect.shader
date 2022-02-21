@@ -54,7 +54,8 @@ Shader "PCTK/DepthInspect"
 #if !UNITY_COLORSPACE_GAMMA
                 encoded.rgb = GammaToLinearSpace(encoded.rgb);
 #endif
-                return encoded;
+                float depth = float4(customDepth * 8, customDepth * 8, customDepth * 8, 1);
+                return depth * depth * depth;
             }
             ENDCG
         }

@@ -8,6 +8,7 @@ Shader "PCTK/PointCloud"
     {
         Tags { "RenderType"="Opaque" }
         Cull Off
+        ZWrite On
         Pass
         {
             Tags { "LightMode"="ForwardBase" }

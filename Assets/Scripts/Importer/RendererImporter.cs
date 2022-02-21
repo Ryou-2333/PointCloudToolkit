@@ -8,7 +8,7 @@ namespace PCToolkit.Pipeline
 {
     public class RendererImporter : MonoBehaviour
     {
-        static string datasetPath = "Datasets/Megascan/002";
+        static string datasetPath = "Datasets/Megascan/001";
         [MenuItem("PCToolkit/Change Textures settings")]
         static void ReimportMaskAndNormal()
         {
@@ -86,31 +86,33 @@ namespace PCToolkit.Pipeline
                         shadingMat = new Material(renderShader);
 
                         AssetDatabase.CreateAsset(shadingMat, shadingMatPath);
-                        shadingMat.mainTexture = baseMap;
-                        shadingMat.SetTexture("_MaskMap", maskMap);
-                        shadingMat.SetTexture("_NormalMap", normalMap);
-                        EditorUtility.SetDirty(shadingMat);
                     }
                     else
                     {
                         shadingMat = AssetDatabase.LoadAssetAtPath<Material>(shadingMatPath);
                     }
 
+                    shadingMat.mainTexture = baseMap;
+                    shadingMat.SetTexture("_MaskMap", maskMap);
+                    shadingMat.SetTexture("_NormalMap", normalMap);
+                    EditorUtility.SetDirty(shadingMat);
+
                     if (!hasParamMat)
                     {
                         paramMat = new Material(paramShader);
                         AssetDatabase.CreateAsset(paramMat, paramMatPath);
-                        paramMat.SetTexture("_Albedo", baseMap);
-                        paramMat.SetTexture("_Mask", maskMap);
-                        paramMat.SetTexture("_NormalMap", normalMap);
-                        paramMat.SetInt("_RenderMod", 1);
-                        EditorUtility.SetDirty(paramMat);
                     }
                     else
                     {
                         paramMat = AssetDatabase.LoadAssetAtPath<Material>(paramMatPath);
                     }
 
+                    paramMat.SetTexture("_Albedo", baseMap);
+                    paramMat.SetTexture("_MaskMap", maskMap);
+                    paramMat.SetTexture("_NormalMap", normalMap);
+                    paramMat.SetInt("_RenderMod", 1);
+
+                    EditorUtility.SetDirty(paramMat);
                     AssetDatabase.SaveAssets();
                     AssetDatabase.Refresh();
 
@@ -198,6 +200,7 @@ namespace PCToolkit.Pipeline
                 {
                     Debug.Log(string.Format("Generate material or renderer failed of {0}. Error: {1}\nStack Trace: {2}", dir.Name, e.Message, e.StackTrace));
                 }
+                break;
             }
 
             Debug.Log("Generating materials and renderers end.");
