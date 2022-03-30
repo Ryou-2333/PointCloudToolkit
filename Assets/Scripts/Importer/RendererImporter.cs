@@ -58,6 +58,7 @@ namespace PCToolkit.Pipeline
             Shader renderShader = Shader.Find("HDRP/Lit");
             Shader paramShader = Shader.Find("PCTK/BRDFInspec");
             var depthMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Material/Depth.mat");
+            var lightingMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Material/OnlyLighting.mat");
             foreach (var dir in dirs)
             {
                 Debug.Log(string.Format("Start generating materials and rederers for {0}/{1}", dir.Name, dirs.Length));
@@ -158,6 +159,7 @@ namespace PCToolkit.Pipeline
 
                         targetRenderer.depthMaterial = depthMat;
                         targetRenderer.shadingMaterial = shadingMat;
+                        targetRenderer.onlyLightingMaterial = lightingMat;
                         targetRenderer.paramMaterial = paramMat;
                         var bounds = new Bounds();
                         {
@@ -200,7 +202,6 @@ namespace PCToolkit.Pipeline
                 {
                     Debug.Log(string.Format("Generate material or renderer failed of {0}. Error: {1}\nStack Trace: {2}", dir.Name, e.Message, e.StackTrace));
                 }
-                break;
             }
 
             Debug.Log("Generating materials and renderers end.");

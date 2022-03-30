@@ -64,6 +64,7 @@ struct Varyings
     half3 albedo : TEXCOORD1;
     half3 normal : TEXCOORD2;
     half3 detailedNormal : TEXCOORD3;
+    float4 worldPos : TEXCOORD4;
     UNITY_FOG_COORDS(0)
 };
 
@@ -87,7 +88,9 @@ Varyings Vertex(Attributes input)
     o.albedo = albedo;
     o.normal = normal;
     o.detailedNormal = detailedNormal;
+    o.worldPos = pos_rc;
     UNITY_TRANSFER_FOG(o, o.position);
+
     return o;
 }
 
@@ -137,6 +140,18 @@ void Geometry(point Varyings input[1], inout TriangleStream<Varyings> outStream)
     outStream.RestartStrip();
 }
 
+float mod(float x, float m) {
+    return (x % m + m) % m;
+}
+
+half GetSteped(float x, float step)
+{
+    half s = mod(x, step * 5);
+    half ss = mod(s, step);
+    s = s - ss;
+    return s * 0.2 / step;
+}
+
 half4 Fragment(Varyings input) : SV_Target
 {
     half3 rc = input.rawColor * DecodeRenderModRaw(asuint(_RenderMod));
@@ -144,8 +159,20 @@ half4 Fragment(Varyings input) : SV_Target
     half3 albedo = input.albedo * DecodeRenderModParam(asuint(_RenderMod)).w;
     half3 detailedNormal = input.detailedNormal * DecodeRenderModParam(asuint(_RenderMod)).x;
     half3 normal = input.normal * DecodeRenderModNormal(asuint(_RenderMod));
+    float4 direction = normalize(input.worldPos);
+    //direction = (direction + 1) / 2;
+    float kernaleSize = 0.2;
+    float angle_H = atan2(direction.y, direction.x);
+    float angle_P = asin(direction.z);
+    float3 W0 = float3(-direction.y, direction.x, 0);
+    float3 U0 = cross(W0, direction);
+    float3 U = float3(0, 1, 0);
+    float angle_B = atan2(dot(W0, U) / abs(W0), dot(U0, U) / abs(U0));
+    half3 directionColor = half3(GetSteped(angle_H, kernaleSize), GetSteped(angle_P, kernaleSize), GetSteped(angle_B, kernaleSize));
+    directionColor = directionColor * DecodeRenderModParam(asuint(_RenderMod)).x;
+
     half3 white = half3(1, 1, 1);
-    half3 c = rc + detailedNormal + m_r.x * white + m_r.y * white + albedo + normal;
+    half3 c = rc + /*detailedNormal*/directionColor + m_r.x * white + m_r.y * white + albedo + normal;
 
     half4 color = half4(c, 1);
     UNITY_APPLY_FOG(input.fogCoord, color);

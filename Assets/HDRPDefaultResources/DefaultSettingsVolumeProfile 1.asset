@@ -393,7 +393,7 @@ MonoBehaviour:
     m_Value: 0
   multiplier:
     m_OverrideState: 0
-    m_Value: 1
+    m_Value: 2000
     min: 0
   upperHemisphereLuxValue:
     m_OverrideState: 0
@@ -576,7 +576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31394aa05878563408489d5c1688f3a0, type: 3}
   m_Name: PathTracing
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   m_AdvancedMode: 0
   enable:
     m_OverrideState: 1
@@ -621,7 +621,7 @@ MonoBehaviour:
   m_AdvancedMode: 0
   mode:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 3
   meteringMode:
     m_OverrideState: 0
     m_Value: 2

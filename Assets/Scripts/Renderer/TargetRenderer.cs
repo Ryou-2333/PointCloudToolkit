@@ -37,7 +37,8 @@ namespace PCToolkit.Rendering
         Normal = 4,
         Detail = 8,
         //Last
-        Depth = 16
+        Depth = 16,
+        OnlyLighting = 17,
     }
     public class TargetRenderer : MonoBehaviour
     {
@@ -45,6 +46,7 @@ namespace PCToolkit.Rendering
         public Material depthMaterial;
         public Material shadingMaterial;
         public Material paramMaterial;
+        public Material onlyLightingMaterial;
         public Bounds bounds;
         public MeshRenderMode _renderMode;
         public MeshRenderMode renderMode
@@ -61,6 +63,13 @@ namespace PCToolkit.Rendering
                     foreach (var mesh in meshes)
                     {
                         mesh.material = shadingMaterial;
+                    }
+                }
+                else if (value == MeshRenderMode.OnlyLighting)
+                {
+                    foreach (var mesh in meshes)
+                    {
+                        mesh.material = onlyLightingMaterial;
                     }
                 }
                 else if (value == MeshRenderMode.Depth)

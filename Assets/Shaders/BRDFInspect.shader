@@ -32,6 +32,7 @@ Shader "PCTK/BRDFInspec"
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
                 float3 normal : TEXCOORD1;
+                float4 worldPos : TEXCOORD2;
             };
 
             int4 DecodeRenderMod(uint data)
@@ -51,6 +52,7 @@ Shader "PCTK/BRDFInspec"
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _Albedo);
                 o.normal = normalize(mul((float3x3)unity_ObjectToWorld, v.objectNormal));
+                o.worldPos = v.vertex;
                 return o;
             }
 

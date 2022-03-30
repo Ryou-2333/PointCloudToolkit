@@ -3,6 +3,25 @@ using UnityEngine.Rendering.HighDefinition;
 
 namespace UnityEngine.Rendering.HighDefinition
 {
+    class SGSkyContext
+    {
+        #region Singleton Pattern
+        public static SGSkyContext Instance { get { return Nested.instance; } }
+
+        private class Nested
+        {
+            // Explicit static constructor to tell C# compiler
+            // not to mark type as beforefieldinit
+            static Nested()
+            {
+            }
+
+            internal static readonly SGSkyContext instance = new SGSkyContext();
+        }
+        #endregion
+        public SphereGuassians SGs = null;
+    }
+
     class SGSkyRenderer : SkyRenderer
     {
         Material m_ProceduralSkyMaterial;
@@ -19,6 +38,17 @@ namespace UnityEngine.Rendering.HighDefinition
         {
         }
 
+        ~SGSkyRenderer()
+        {
+        }
+
+        public void UpdateParameters(SphereGuassians SGs)
+        {
+            if(m_SGs != SGs)
+            m_SGs = SGs;
+            needUpdate = true;
+        }
+
         protected override bool Update(BuiltinSkyParameters builtinParams)
         {
             return needUpdate;
@@ -28,13 +58,8 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             var hdrp = GraphicsSettings.currentRenderPipeline as HDRenderPipelineAsset;
             m_ProceduralSkyMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("Hidden/HDRP/Sky/SGSky"));
-            GenerateSGs();
-        }
-
-        public void GenerateSGs()
-        {
-            m_SGs = new SphereGuassians();
-            needUpdate = true;
+            if (SGSkyContext.Instance.SGs != null) UpdateParameters(SGSkyContext.Instance.SGs);
+            else UpdateParameters(new SphereGuassians());
         }
 
         public override void Cleanup()
@@ -44,6 +69,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public override void RenderSky(BuiltinSkyParameters builtinParams, bool renderForCubemap, bool renderSunDisk)
         {
+            if (SGSkyContext.Instance.SGs != null) UpdateParameters(SGSkyContext.Instance.SGs);
             SGSky skySettings = builtinParams.skySettings as SGSky;
             m_PropertyBlock.SetMatrix(_PixelCoordToViewDirWS, builtinParams.pixelCoordToViewDirMatrix);
             if (needUpdate)

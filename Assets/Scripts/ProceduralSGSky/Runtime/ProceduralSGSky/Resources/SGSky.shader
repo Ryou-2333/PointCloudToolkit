@@ -23,7 +23,7 @@ Shader "Hidden/HDRP/Sky/SGSky"
 
     uniform int _SGLength;
     uniform float3 _DirArray[128]; //Dir vector x, y, z
-    uniform float2 _FeatureArray[128]; //Amplitude, Sharpness
+    uniform float4 _FeatureArray[128]; //Amplitude, Sharpness
 
     struct Attributes
     {
@@ -49,23 +49,29 @@ Shader "Hidden/HDRP/Sky/SGSky"
     struct SG
     {
         float3 Axis;
-        float Amplitude;
+        float3 TintColor;
         float Sharpness;
     };
+
+    float lum(float3 color)
+    {
+        return dot(color, float3(0.21, 0.71, 0.07));
+    }
 
     float3 GetSkyColor(float3 dir)
     {
         float3 c = float3(0, 0, 0);
+
         for (int i = 0; i < _SGLength; i++)
         {
             SG sg;
             sg.Axis = _DirArray[i];
-            sg.Amplitude = _FeatureArray[i].x;
-            sg.Sharpness = _FeatureArray[i].y;
-
+            sg.TintColor = _FeatureArray[i].rgb;
+            sg.Sharpness = _FeatureArray[i].a;
+            float lumi = lum(sg.TintColor);
             //Evaluate SG
             float cosAngle = dot(dir, sg.Axis);
-            c += sg.Amplitude * exp(sg.Sharpness * (cosAngle - 1.0f));
+            c += (sg.TintColor * exp(sg.Sharpness * (cosAngle - 1.0f)));
         }
 
         return c;

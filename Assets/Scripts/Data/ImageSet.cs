@@ -13,6 +13,7 @@ namespace PCToolkit.Data
         public Texture2D normal;
         public Texture2D detail;
         public Texture2D shaded;
+        public Texture2D onlyLighting;
         public Matrix4x4 imageToWorld;
         public Matrix4x4 worldToImage;
         public Vector2Int rect
@@ -23,9 +24,13 @@ namespace PCToolkit.Data
                 {
                     return new Vector2Int(depth.width, depth.height);
                 }
-                else
+                else if (shaded != null)
                 {
                     return new Vector2Int(shaded.width, shaded.height);
+                }
+                else
+                {
+                    return new Vector2Int(onlyLighting.width, onlyLighting.height);
                 }
             } 
         }
@@ -51,6 +56,9 @@ namespace PCToolkit.Data
                     return;
                 case MeshRenderMode.Depth:
                     depth = tex;
+                    return;
+                case MeshRenderMode.OnlyLighting:
+                    onlyLighting = tex;
                     return;
                 default:
                     throw new Exception("ImageSet RenderMode out of index.");
@@ -83,6 +91,10 @@ namespace PCToolkit.Data
             {
                 UnityEngine.Object.DestroyImmediate(shaded);
             }
+            if (onlyLighting != null)
+            {
+                UnityEngine.Object.DestroyImmediate(onlyLighting);
+            }
         }
     }
 
@@ -100,6 +112,7 @@ namespace PCToolkit.Data
                 return imageSets[0].rect;
             }
         }
+        public LightingParams lightingParams;
 
         public ImageSet this[int key]
         {

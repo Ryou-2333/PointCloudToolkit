@@ -21,6 +21,7 @@ namespace PCToolkit.Pipeline
         const string datasetDir = "../../Datasets";
         const string imageSetDir = "ImageSets";
         const string mvcFilename = "mvc.config";
+        const string lightingFileNameFormatter = "lighmting_{0}.config";
 
         public static void SaveImageSet(MultiViewImageSet mvis)
         {
@@ -36,6 +37,7 @@ namespace PCToolkit.Pipeline
             }
 
             File.WriteAllText(dir + "/" + mvcFilename, JsonUtility.ToJson(mvcInfo));
+            File.WriteAllText(string.Format(dir + "/" + lightingFileNameFormatter, mvis.variantName), JsonUtility.ToJson(mvis.lightingParams));
             for (int i = 0; i < mvis.count; i++)
             {
 
@@ -86,6 +88,21 @@ namespace PCToolkit.Pipeline
                     else
                     {
                         filename = string.Format("{0}_{1}_{2}.png", i, MeshRenderMode.Shaded.ToString(), mvis.variantName);
+                    }
+                    File.WriteAllBytes(string.Format("{0}/{1}", dir, filename), bytes);
+                }
+
+                if (mvis[i].onlyLighting != null)
+                {
+                    var bytes = mvis[i].onlyLighting.EncodeToPNG();
+                    string filename;
+                    if (string.IsNullOrEmpty(mvis.variantName))
+                    {
+                        filename = string.Format("{0}_{1}.png", i, MeshRenderMode.OnlyLighting.ToString());
+                    }
+                    else
+                    {
+                        filename = string.Format("{0}_{1}_{2}.png", i, MeshRenderMode.OnlyLighting.ToString(), mvis.variantName);
                     }
                     File.WriteAllBytes(string.Format("{0}/{1}", dir, filename), bytes);
                 }
