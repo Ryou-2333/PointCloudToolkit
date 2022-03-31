@@ -47,6 +47,7 @@ namespace PCToolkit.Rendering
         public Material shadingMaterial;
         public Material paramMaterial;
         public Material onlyLightingMaterial;
+        private MaterialPropertyBlock mbp;
         public Bounds bounds;
         public MeshRenderMode _renderMode;
         public MeshRenderMode renderMode
@@ -62,35 +63,40 @@ namespace PCToolkit.Rendering
                 {
                     foreach (var mesh in meshes)
                     {
-                        mesh.material = shadingMaterial;
+                        mesh.sharedMaterial = shadingMaterial;
                     }
                 }
                 else if (value == MeshRenderMode.OnlyLighting)
                 {
                     foreach (var mesh in meshes)
                     {
-                        mesh.material = onlyLightingMaterial;
+                        mesh.sharedMaterial = onlyLightingMaterial;
                     }
                 }
                 else if (value == MeshRenderMode.Depth)
                 {
                     foreach (var mesh in meshes)
                     {
-                        mesh.material = depthMaterial;
+                        mesh.sharedMaterial = depthMaterial;
                     }
                 }
                 else
                 {
                     foreach (var mesh in meshes)
                     {
-                        paramMaterial.SetInt("_RenderMode", (int)value);
-                        mesh.material = paramMaterial;
+                        if (mesh.sharedMaterial != paramMaterial)
+                        {
+                            mesh.sharedMaterial = paramMaterial;
+                        }
+
+                        if(mbp == null) mbp = new MaterialPropertyBlock();
+                        mesh.GetPropertyBlock(mbp);
+                        mbp.SetInt("_RenderMode", (int)value);
+                        mesh.SetPropertyBlock(mbp);
                     }
                 }
             }
         }
-
-
     }
 }
 

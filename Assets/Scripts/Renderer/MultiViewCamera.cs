@@ -82,7 +82,7 @@ namespace PCToolkit.Rendering
 
         private float CalculateDistance(TargetRenderer targetRenderer)
         {
-            return targetRenderer.bounds.size.magnitude * parameters.distFactor;
+            return Mathf.Max(targetRenderer.bounds.size.magnitude * parameters.distFactor, targetRenderer.bounds.size.magnitude + 0.06f);
         }
 
         public void SpawnCameras(TargetRenderer targetRenderer)
@@ -136,9 +136,9 @@ namespace PCToolkit.Rendering
             cameras[camIdx].PreCapture();
         }
 
-        public CaptureData Capture(int camIdx)
+        public CaptureData Capture(int camIdx, string texName)
         {
-            return cameras[camIdx].Capture();
+            return cameras[camIdx].Capture(texName);
         }
 
         //private List<CaptureData> CaptureCameras(TargetRenderer targetRenderer)

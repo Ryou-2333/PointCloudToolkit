@@ -44,12 +44,13 @@ namespace PCToolkit.Rendering
             }
         }
 
-        public CaptureData Capture()
+        public CaptureData Capture(string texName)
         {
             var data = new CaptureData();
             //RenderTexture.active = cam.targetTexture;
             //var targetTexture = RenderTexture.active;
             data.texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGBAFloat, false, false);
+            data.texture.name = texName;
             data.texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
             data.texture.Apply();
             RenderTexture.active = null;

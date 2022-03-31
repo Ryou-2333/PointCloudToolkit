@@ -45,7 +45,7 @@ namespace PCToolkit.Pipeline
 
         public void Capture()
         {
-            var data = mvc.Capture(curCamIdx);
+            var data = mvc.Capture(curCamIdx, target.name + "_" + target.renderMode.ToString());
             if (!samplingLight)
             {
                 mvis[curCamIdx].SetTexture(MeshRenderMode.Shaded, data.texture);

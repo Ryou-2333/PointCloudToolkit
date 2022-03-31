@@ -22,6 +22,7 @@ namespace PCToolkit.Pipeline
         private bool firstUpdate;
         private bool captureEnd;
         private MultiViewImageSet mvis;
+        private bool rendering = false;
 
         private void Awake()
         {
@@ -36,6 +37,7 @@ namespace PCToolkit.Pipeline
 
         public void PreCapture()
         {
+            if (rendering) return;
             Debug.Log(string.Format("Prepareing capture object {0} with camera no.{1}, mode {2}.", curObjIdx, curCamIdx, curRenderMode));
             mvc.PrepareCapture(target, curCamIdx);
             StartCoroutine(CaptureAfterRendering());
@@ -43,16 +45,18 @@ namespace PCToolkit.Pipeline
 
         public void Capture()
         {
-            var data = mvc.Capture(curCamIdx);
+            var data = mvc.Capture(curCamIdx, target.name + "_" + target.renderMode.ToString());
             mvis[curCamIdx].SetTexture(curRenderMode, data.texture);
             Debug.Log(string.Format("End capture object {0} with camera no.{1}, mode {2}.", curObjIdx, curCamIdx, curRenderMode));
         }
 
         private IEnumerator CaptureAfterRendering()
         {
+            rendering = true;
             yield return new WaitForEndOfFrame();
             Capture();
             ToNextCapture();
+            rendering = false;
         }
 
         private void LoadTarget()
@@ -123,7 +127,7 @@ namespace PCToolkit.Pipeline
         private void ToNextObject()
         {
             ImageSetIO.SaveImageSet(mvis);
-            //mvis.Dispose();
+            mvis.Dispose();
             if (curObjIdx >= endObjIdx)
             {
                 Debug.Log(string.Format("Objects {0} - {1} captured.", startObjIdx, endObjIdx));
